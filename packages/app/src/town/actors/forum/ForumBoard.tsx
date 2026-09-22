@@ -1,3 +1,5 @@
+import Markdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 import { MessageTime } from "../../../ui/MessageTime"
 import { useState, type FormEvent } from "react"
 import { ResidentAvatar } from "../../scene/ResidentAvatar"
@@ -50,6 +52,15 @@ export function ForumBoard({
         <ResidentAvatar index={Math.max(0, residents.findIndex((resident) => resident.id === message.author))} />
       )}
       <strong>{author(message.author)}</strong>
+      <span
+        className="forum-post-karma"
+        data-positive={(message.score ?? 0) > 0}
+        data-negative={(message.score ?? 0) < 0}
+        title="Net votes on this post"
+        aria-label={`Post karma: ${message.score ?? 0}`}
+      >
+        {(message.score ?? 0) > 0 ? "+" : ""}{message.score ?? 0} karma
+      </span>
       <MessageTime at={message.at} />
     </div>
   )
@@ -58,15 +69,19 @@ export function ForumBoard({
     setParent(id)
     setBody("")
   }
+  const missionFlair = (mission?: Mission) => mission && (
+    <span className={`forum-mission-status forum-mission-status-${mission.status}`}>
+      Mission · {mission.status}
+    </span>
+  )
   const missionDetails = (mission: Mission, detail = false) => {
     const parentMission = mission.parentMissionId ? missionById.get(mission.parentMissionId) : undefined
     const children = missions.filter(entry => entry.parentMissionId === mission.id)
     return <div className="forum-mission-details">
       <div className="forum-mission-line">
-        <span className={`forum-mission-status forum-mission-status-${mission.status}`}>Mission · {mission.status}</span>
         <span>{mission.owner ? `Owned by ${author(mission.owner)}` : "Unclaimed"}</span>
+        {detail && mission.claimExpiresAt && <span>Claim expires <time dateTime={new Date(mission.claimExpiresAt).toISOString()}>{new Date(mission.claimExpiresAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</time></span>}
       </div>
-      {mission.claimExpiresAt && <small>Claim expires {new Date(mission.claimExpiresAt).toLocaleString()}</small>}
       {detail && parentMission && <button type="button" onClick={() => openThread(parentMission.id)}>Parent mission: {parentMission.description}</button>}
       {detail && children.length > 0 && <div className="forum-mission-children"><small>Child missions</small>{children.map(child => <button type="button" key={child.id} onClick={() => openThread(child.id)}>{child.description}</button>)}</div>}
       {detail && mission.requests.length > 0 && <div className="forum-handoff-requests"><small>Handoff requests</small>{mission.requests.map((request, index) => <p key={`${request.residentId}-${request.at}-${index}`}><strong>{author(request.residentId)}</strong> · {request.reason}</p>)}</div>}
@@ -127,7 +142,20 @@ export function ForumBoard({
               )}
             </small>
           )}
-          <p>{message.body}</p>
+          <div className="forum-markdown">
+            <Markdown remarkPlugins={[remarkGfm]} skipHtml components={{
+              img: ({ alt }) => <span>{alt}</span>,
+              a: ({ href, children }) => {
+                if (!href || !/^https?:\/\//i.test(href)) return <span>{children}</span>
+                const bare = String(children) === href || `https://${String(children)}` === href
+                let label = children
+                if (bare) {
+                  try { label = new URL(href).hostname.replace(/^www\./, "") } catch { /* Keep the original label. */ }
+                }
+                return <a href={href} target="_blank" rel="noopener noreferrer" title={href} aria-label={bare ? href : undefined}>{label}{bare && <span className="forum-link-arrow" aria-hidden="true"> ↗</span>}</a>
+              }
+            }}>{message.body}</Markdown>
+          </div>
         </div>
         <button
           type="button"
@@ -204,7 +232,7 @@ export function ForumBoard({
           <p className="forum-hint">Start a new conversation with the residents.</p>
         ) : root ? (
           <>
-            <h3>{root.title}</h3>
+            <h3 className="forum-thread-title">{root.title}{missionFlair(missionById.get(root.id))}</h3>
             {missionById.get(root.id) && missionDetails(missionById.get(root.id)!, true)}
             {renderMessage(root, 0)}
           </>
@@ -217,8 +245,8 @@ export function ForumBoard({
               onClick={() => openThread(message.id)}
             >
               {authorLine(message)}
+              <h3 className="forum-thread-title">{message.title}{missionFlair(missionById.get(message.id))}</h3>
               {missionById.get(message.id) && missionDetails(missionById.get(message.id)!)}
-              <h3>{message.title}</h3>
               <p>{message.body}</p>
               <small>
                 {
