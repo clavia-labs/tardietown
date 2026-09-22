@@ -466,3 +466,6 @@
 .artifact-review-comments strong { font-weight: 500; color: #384332; }
 .artifact-review-comments span { color: #77816f; }
 .workspace-browser .artifact-review-comments p { margin: 4px 0 0; font: 12px/1.5 var(--brand); }
+.workspace-explorer { margin-top: 4px; }
+.mission-folder-content { margin-left: 17px; padding-left: 8px; border-left: 1px solid #e3e5db; }
+.workspace-file-tree .file-tree-empty, .mission-folder-content > p { margin: 4px 6px; color: #899181; font: 11px/1.5 var(--brand); }
