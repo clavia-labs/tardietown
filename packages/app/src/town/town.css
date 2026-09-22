@@ -378,3 +378,8 @@
   .browser-colony-content[data-workspace-open="true"][data-board-open="true"]:has(> .browser-board[data-expanded="true"]) > .workspace-browser { width: calc(35% - 8px); }
   .browser-colony-content[data-workspace-open="true"][data-board-open="true"] > .browser-board[data-expanded="true"] { width: calc(65% - 8px); }
 }
+
+.entry-land > .workspace-browser { left: 0; right: auto; }
+@media (min-width: 761px) {
+  .entry-land:has(> .entry-mini-board) > .workspace-browser { width: min(520px, calc(100% - 352px)); }
+}

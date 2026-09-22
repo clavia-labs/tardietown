@@ -72,11 +72,11 @@ export function Town({
   const [libraryOpen, setLibraryOpen] = useState(false)
   const closeLibrary = useCallback(() => setLibraryOpen(false), [])
   const toggleLibrary = useCallback(() => { setLibraryOpen(open => !open); setWorkspaceOpen(false); setBoardOpen(false) }, [])
-  const toggleWorkspace = useCallback(() => { setArtifactTarget(undefined); setWorkspaceOpen(open => !open); setLibraryOpen(false); setBoardOpen(false) }, [])
+  const toggleWorkspace = useCallback(() => { setArtifactTarget(undefined); setWorkspaceOpen(open => !open); setLibraryOpen(false) }, [])
   const closeWorkspace = useCallback(() => { setWorkspaceOpen(false); setArtifactTarget(undefined) }, [])
   const openMissionArtifact = useCallback((path: string, revision?: number) => { setArtifactTarget({ path, revision }); setSelectedResident(undefined); setLibraryOpen(false); setBoardOpen(true); setWorkspaceOpen(true) }, [])
   const [boardOpen, setBoardOpen] = useState(true)
-  const openBoard = useCallback(() => { setBoardOpen(open => !open); setLibraryOpen(false); setWorkspaceOpen(false) }, [])
+  const openBoard = useCallback(() => { setBoardOpen(open => !open); setLibraryOpen(false) }, [])
   const latest = messages.findLast((message) => message.author !== "user")
   return (
     <main className="browser-colony">

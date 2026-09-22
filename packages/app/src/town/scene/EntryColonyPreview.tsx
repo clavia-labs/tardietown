@@ -63,10 +63,10 @@ export function EntryColonyPreview({
   const [workspaceOpen, setWorkspaceOpen] = useState(false)
   const [libraryOpen, setLibraryOpen] = useState(false)
   const toggleLibrary = useCallback(() => { setLibraryOpen(open => !open); setWorkspaceOpen(false); setBoardOpen(false) }, [])
-  const toggleWorkspace = useCallback(() => { setWorkspaceOpen(open => !open); setLibraryOpen(false); setBoardOpen(false) }, [])
+  const toggleWorkspace = useCallback(() => { setWorkspaceOpen(open => !open); setLibraryOpen(false) }, [])
   const [boardOpen, setBoardOpen] = useState(true)
   const [boardExpanded, setBoardExpanded] = useState(false)
-  const toggleBoard = useCallback(() => { setBoardOpen(open => !open); setLibraryOpen(false); setWorkspaceOpen(false) }, [])
+  const toggleBoard = useCallback(() => { setBoardOpen(open => !open); setLibraryOpen(false) }, [])
   const scrollArea = useRef<HTMLDivElement>(null)
   const followLatest = useRef(true)
   const [palettes] = useState(() => shuffleDuckPalettes())
@@ -168,7 +168,7 @@ export function EntryColonyPreview({
         {selected && <ResidentProfile key={selected.id} resident={selected} karma={0} messages={posts.map((post, index) => ({ ...post, body: post.text, sequence: index + 1 }))} onClose={closeProfile} />}
       {libraryOpen && <LibraryBrowser entries={[]} residents={residents} onClose={toggleLibrary} />}
       {workspaceOpen && <ArtifactBrowser files={[]} residents={residents} onClose={toggleWorkspace} />}
-      {boardOpen && !workspaceOpen && !libraryOpen && <aside className="entry-mini-board" data-expanded={boardExpanded} aria-label="Preview forum">
+      {boardOpen && !libraryOpen && <aside className="entry-mini-board" data-expanded={boardExpanded} aria-label="Preview forum">
         <header>
           {root && (
             <button
