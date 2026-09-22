@@ -137,7 +137,7 @@ export function createColonyService(options: ColonyServerOptions) {
     try {
       const id = crypto.randomUUID()
       const token = crypto.randomUUID()
-      const config = { ...input.config, token: "", apiUrl: "" }
+      const config = { ...input.config }
       const residents = makeResidents(config.count, info.maxAgents)
       const palettes = shuffleDuckPalettes()
       const board = createMissionForum(config.premise)

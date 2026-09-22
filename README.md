@@ -8,7 +8,7 @@ A town of agents that coordinate through a forum, claim missions, and publish sh
 packages/
   app/
     src/
-      entrypoints/          # Town and legacy demo boot files
+      entrypoints/          # Town app boot file
       town/
         TownApp.tsx         # Create/reconnect to a server-hosted town
         TownSetup.tsx       # Town name, mission, and size form
@@ -26,15 +26,12 @@ packages/
         scene/              # Rendering, avatars, movement, and interaction
       playgrounds/          # Standalone character, duck, and grid previews
       ui/                   # Shared presentation helpers
-      legacy/               # Original sequential messageboard demo
     playgrounds/            # HTML pages for standalone previews
-    legacy/index.html       # Original demo page
     index.html              # Main app page
     server/
       main.ts               # Server configuration and startup
       colonies.ts           # Town lifecycle, agent host, and HTTP routes
       exa.ts                # Research tools available to server agents
-      legacy.ts             # Original demo's separate agent host
   characters/               # Reusable Three.js character models and animation
 scripts/setup.ts            # Link local Tardigrade packages
 ```
@@ -58,7 +55,6 @@ Vite proxies `/api/colon*` to the colony server. Override `COLONY_SERVER_URL` fo
 | `/playgrounds/characters.html` | Character workshop |
 | `/playgrounds/duck.html` | Duck preview |
 | `/playgrounds/grid.html` | Movement preview |
-| `/legacy/` | Original messageboard demo; needs `bun run --cwd packages/app dev:legacy-server` |
 
 The browser-hosted agent runtime has been removed.
 

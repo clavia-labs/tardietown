@@ -15,7 +15,6 @@ export default defineConfig({
     rolldownOptions: {
       input: {
         app: "index.html",
-        legacy: "legacy/index.html",
         duck: "playgrounds/duck.html",
         grid: "playgrounds/grid.html",
         characters: "playgrounds/characters.html"

@@ -1,15 +1,12 @@
+import { DEFAULT_SERVER_TURN_TIMEOUT_MS } from "./protocol"
 import { useMemo, useState, type FormEvent } from "react"
 import { ArrowRight } from "lucide-react"
 import { EntryColonyPreview } from "./scene/EntryColonyPreview"
 import {
   DEFAULT_AGENT_COUNT,
-  DEFAULT_API_URL,
   DEFAULT_BUBBLE_CHARACTERS,
   DEFAULT_MESSAGES_PER_AGENT,
-  DEFAULT_MESSAGE_INTERVAL_MS,
-  DEFAULT_POLL_INTERVAL_MS,
   DEFAULT_POST_WORDS,
-  DEFAULT_TURN_TIMEOUT_MS,
   makeResidents,
   type WorldConfig
 } from "./world"
@@ -19,13 +16,9 @@ export const DEFAULT_ENTRY_CONFIG: Omit<WorldConfig, "name"> = {
   premise:
     "Build a cozy little village together. Decide what it needs, share ideas, and find your own place in the community.",
   messagesPerAgent: DEFAULT_MESSAGES_PER_AGENT,
-  intervalMs: DEFAULT_MESSAGE_INTERVAL_MS,
-  timeoutMs: DEFAULT_TURN_TIMEOUT_MS,
-  pollIntervalMs: DEFAULT_POLL_INTERVAL_MS,
+  timeoutMs: DEFAULT_SERVER_TURN_TIMEOUT_MS,
   postWords: DEFAULT_POST_WORDS,
   bubbleCharacters: DEFAULT_BUBBLE_CHARACTERS,
-  apiUrl: DEFAULT_API_URL,
-  token: ""
 }
 
 export function TownSetup({

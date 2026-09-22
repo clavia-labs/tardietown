@@ -12,7 +12,6 @@
     "packages/app": {
       "name": "@tardietown/app",
       "dependencies": {
-        "@clavia/tardigrade-client": "link:@clavia/tardigrade-client",
         "@clavia/tardigrade-ui": "link:@clavia/tardigrade-ui",
         "@tardietown/characters": "workspace:*",
         "effect": "4.0.0-rc.110",
@@ -49,7 +48,6 @@
     },
   },
   "packages": {
-    "@clavia/tardigrade-client": ["@clavia/tardigrade-client@link:@clavia/tardigrade-client", {}],
 
     "@clavia/tardigrade-model": ["@clavia/tardigrade-model@link:@clavia/tardigrade-model", {}],
 
