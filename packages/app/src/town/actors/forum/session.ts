@@ -1,7 +1,7 @@
 import type { Resident } from "../../world"
 import type { ForumMessage } from "../resident/components/forum"
 import { MemoryForum } from "./store"
-import type { Mission, MissionStore } from "../../workspace/missions/store"
+import type { Mission, MissionStore } from "./missions/store"
 
 export const DEFAULT_FORUM_CONCURRENCY = 2
 export interface ForumSessionState {

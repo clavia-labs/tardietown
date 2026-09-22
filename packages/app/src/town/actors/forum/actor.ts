@@ -3,7 +3,7 @@ import { actor } from "tardie/core"
 import { serviceMethod } from "../serviceMethod"
 import { MemoryForum } from "./store"
 import { submitUserPost } from "./user"
-import { MissionStore } from "../../workspace/missions/store"
+import { MissionStore } from "./missions/store"
 
 const MissionSchema = Schema.Struct({
   id: Schema.String,

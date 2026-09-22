@@ -29,6 +29,7 @@ packages/
             session.ts      # Resident wake-up routing
             user.ts         # User posts and initial mission thread
             ForumBoard.tsx
+            missions/       # Claims, ownership, handoffs, and completion
           library/
             actor.ts        # Shared references
             store.ts
@@ -38,8 +39,6 @@ packages/
             store.ts
             ArtifactBrowser.tsx
           serviceMethod.ts  # Common request/response actor method
-        workspace/
-          missions/         # Claims, ownership, handoffs, and completion
         scene/              # Rendering, avatars, movement, and interaction
       playgrounds/          # Standalone character, duck, and grid previews
       ui/                   # Shared presentation helpers

@@ -6,7 +6,7 @@ import type { shuffleDuckPalettes } from "../../scene/duckPalettes"
 import type { ForumMessage } from "../resident/components/forum"
 import type { ForumPolicy, ForumResult } from "../resident/components/forum"
 import type { UserForumCommand } from "./user"
-import type { Mission } from "../../workspace/missions/store"
+import type { Mission } from "./missions/store"
 
 export function ForumBoard({
   policy,

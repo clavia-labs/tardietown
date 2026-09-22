@@ -3,7 +3,7 @@ import type { ForumMessage, ForumPolicy } from "./actors/resident/components/for
 import type { ForumSessionState } from "./actors/forum/session"
 import type { shuffleDuckPalettes } from "./scene/duckPalettes"
 import type { Resident, WorldConfig } from "./world"
-import type { Mission, MissionPolicy } from "./workspace/missions/store"
+import type { Mission, MissionPolicy } from "./actors/forum/missions/store"
 import type { LibraryEntry, LibraryPolicy } from "./actors/library/store"
 
 export const DEFAULT_COLONY_SERVER_PORT = 4244

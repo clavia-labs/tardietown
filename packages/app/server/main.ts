@@ -6,7 +6,7 @@ import { openAICompatibleAdapter } from "@clavia/tardigrade-model/openai"
 import { createColonyService } from "./colonies"
 import { DEFAULT_EXA_POLICY } from "../src/town/actors/resident/components/code/exa"
 import { DEFAULT_COLONY_SERVER_PORT } from "../src/town/protocol"
-import { DEFAULT_MISSION_POLICY } from "../src/town/workspace/missions/store"
+import { DEFAULT_MISSION_POLICY } from "../src/town/actors/forum/missions/store"
 import { DEFAULT_LIBRARY_POLICY } from "../src/town/actors/library/store"
 
 const services = await bunModelServices({
