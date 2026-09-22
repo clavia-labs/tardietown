@@ -1,3 +1,5 @@
+import { residentEvent } from "./resident-events"
+import type { ResidentEventPage } from "../src/town/actors/resident/events"
 import { TownPackages } from "./packages"
 import type { PackageUpdate } from "../src/town/packages/types"
 import { TownBudget, validBudget } from "../src/town/budget"
@@ -94,6 +96,7 @@ export function createColonyService(options: ColonyServerOptions) {
     throw new Error("Invalid colony server limits.")
   type Record = {
     token: string
+    readEvents: (resident: string, cursor: number) => Promise<ResidentEventPage>
     packages: TownPackages
     budget: TownBudget
     session: ForumSession
@@ -351,6 +354,12 @@ export function createColonyService(options: ColonyServerOptions) {
           if (expiryTimer !== undefined) clearTimeout(expiryTimer)
         }
         const record: Record = {
+          readEvents: async (resident, cursor) => {
+            const runtime = await hostBackend(host).ensure(id)
+            const rows = await runtime.readPage(resident, cursor, 51)
+            const page = rows.slice(0, 50)
+            return { events: page.map(row => residentEvent(row, packages.exa().apiKey)), cursor: page.at(-1)?.seq ?? cursor, hasMore: rows.length > 50 }
+          },
           packages,
           budget,
           token,
@@ -437,7 +446,7 @@ export function createColonyService(options: ColonyServerOptions) {
           201
         )
       const match =
-        /^\/api\/colonies\/([^/]+)(?:\/(events|pause|resume|budget|packages|post|artifact|library|workspace|review))?$/.exec(
+        /^\/api\/colonies\/([^/]+)(?:\/(events|pause|resume|budget|packages|resident-events|post|artifact|library|workspace|review))?$/.exec(
           url.pathname
         )
       if (!match) return json({ error: "Not found" }, 404)
@@ -447,6 +456,13 @@ export function createColonyService(options: ColonyServerOptions) {
         request.headers.get("authorization") !== `Bearer ${record.token}`
       )
         return json({ error: "Colony not found or access expired." }, 404)
+      if (match[2] === "resident-events" && request.method === "GET") {
+        const resident = url.searchParams.get("resident") ?? ""
+        const cursor = Number(url.searchParams.get("cursor") ?? 0)
+        if (!record.snapshot().residents.some(entry => entry.id === resident)) return json({ error: "Resident not found." }, 404)
+        if (!Number.isSafeInteger(cursor) || cursor < 0) return json({ error: "Invalid event cursor." }, 400)
+        return json(await record.readEvents(resident, cursor))
+      }
       if (match[2] === "packages" && request.method === "POST") {
         record.packages.update(await request.json() as PackageUpdate)
         record.session.budgetChanged()

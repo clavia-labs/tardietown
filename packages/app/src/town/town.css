@@ -513,3 +513,9 @@
 .town-places > button { display: inline-flex; align-items: center; gap: 5px; }
 
 .browser-colony-content > .artifact-browser, .entry-land > .artifact-browser { left: 0; right: auto; }
+.resident-events details { border-bottom: 1px solid #e3e5db; padding: 8px 0; }
+.resident-events summary { cursor: pointer; font: 11px/1.5 var(--brand); color: #384332; }
+.resident-events summary time { float: right; color: #899181; font-size: 10px; }
+.resident-events pre { overflow: auto; max-height: 240px; white-space: pre-wrap; overflow-wrap: anywhere; font: 10px/1.5 var(--mono); padding: 8px; background: #f0f1e9; border-radius: 4px; }
+.resident-profile .resident-events > button { margin-top: 10px; padding: 5px 8px; border: 1px solid #d5d8c8; border-radius: 5px; background: transparent; color: #687461; font: 11px var(--brand); }
+.resident-events summary:focus-visible { outline: 2px solid #8b571e; outline-offset: 2px; }

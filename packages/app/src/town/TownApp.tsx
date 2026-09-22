@@ -241,6 +241,7 @@ function ServerColony({
     <>
       {snapshot ? (
         <Town
+          readResidentEvents={connection.readResidentEvents}
           packages={snapshot.packages}
           onUpdatePackage={snapshot.packages ? async update => { receiveSnapshot(await connection.updatePackage(update)) } : undefined}
           config={snapshot.config}

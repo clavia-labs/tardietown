@@ -1,3 +1,4 @@
+import type { ResidentEventPage } from "./actors/resident/events"
 import type { PackageUpdate } from "./packages/types"
 import type { MissionFile, MissionFileInfo } from "./actors/forum/missions/workspace"
 import type { MissionResult } from "./actors/forum/missions/store"
@@ -42,6 +43,7 @@ export function serverConnection(access: ColonyAccess) {
     readArtifact: (filePath: string, revision?: number) => request<{ artifact: ArtifactDocument; history: Artifact[] }>(`${path}/artifact?path=${encodeURIComponent(filePath)}${revision === undefined ? "" : `&revision=${revision}`}`, { headers }),
     readLibrary: (id: string) => request<LibraryDocument>(`${path}/library?id=${encodeURIComponent(id)}`, { headers }),
     snapshot: () => request<ColonySnapshot>(path, { headers }),
+    readResidentEvents: (resident: string, cursor = 0) => request<ResidentEventPage>(`${path}/resident-events?resident=${encodeURIComponent(resident)}&cursor=${cursor}`, { headers }),
     updatePackage: (update: PackageUpdate) => request<ColonySnapshot>(`${path}/packages`, { method: "POST", headers, body: JSON.stringify(update) }),
     addBudget: (amountUsd: number, operationId: string) => request<ColonySnapshot>(`${path}/budget`, { method: "POST", headers, body: JSON.stringify({ amountUsd, operationId }) }),
     pause: () =>

@@ -1,3 +1,5 @@
+import { ResidentEvents } from "./ResidentEvents"
+import type { ReadResidentEvents } from "./events"
 import { X as PanelClose } from "lucide-react"
 import { MessageTime } from "../../../ui/MessageTime"
 import type { ForumMessage } from "./components/forum"
@@ -6,13 +8,14 @@ import { useEffect, useRef, useState } from "react"
 import { ResidentAvatar } from "../../scene/ResidentAvatar"
 import type { Resident } from "../../world"
 
-export function ResidentProfile({ resident, messages, karma, onClose }: {
+export function ResidentProfile({ resident, messages, karma, onClose, readEvents }: {
+  readEvents?: ReadResidentEvents | undefined
   resident: Resident
   karma: number
   messages: readonly ForumMessage[]
   onClose: () => void
 }) {
-  const [tab, setTab] = useState<"posts" | "replies">("posts")
+  const [tab, setTab] = useState<"posts" | "replies" | "events">("posts")
   const card = useRef<HTMLElement>(null)
   const close = useRef<HTMLButtonElement>(null)
   useEffect(() => {
@@ -46,9 +49,10 @@ export function ResidentProfile({ resident, messages, karma, onClose }: {
       <div className="resident-activity-tabs" role="group" aria-label="Resident activity">
         <button type="button" aria-pressed={tab === "posts"} onClick={() => setTab("posts")}>Posts · {contributions.filter(message => !message.parentId).length}</button>
         <button type="button" aria-pressed={tab === "replies"} onClick={() => setTab("replies")}>Replies · {contributions.filter(message => message.parentId).length}</button>
+        {readEvents && <button type="button" aria-pressed={tab === "events"} onClick={() => setTab("events")}>Events</button>}
       </div>
       <div className="resident-activity" tabIndex={0} aria-label={`${resident.name}'s ${tab}`}>
-        {activity.length ? activity.map(message => {
+        {tab === "events" && readEvents ? <ResidentEvents key={resident.id} resident={resident.id} read={readEvents} /> : activity.length ? activity.map(message => {
           const thread = messages.find(entry => entry.id === message.threadId)
           return <article key={message.id}>
             <header><span>{message.parentId ? "Replied" : "Posted"}</span><MessageTime at={message.at} /></header>
