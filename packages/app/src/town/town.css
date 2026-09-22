@@ -293,7 +293,7 @@
 
 .workspace-browser nav > .workspace-published { margin-left: auto; }
 .forum-mission-status-in_review { background: #eee3c9; color: #806329; }
-.mission-review { display: grid; gap: 6px; width: fit-content; max-width: min(100%, 560px); box-sizing: border-box; padding: 8px 10px; border: 1px solid #e3e5db; border-radius: 7px; background: #f2f3ec; }
+.mission-review { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; width: 100%; min-width: 0; box-sizing: border-box; padding: 6px 0; border: 0; background: transparent; }
 .mission-review p { margin: 0 0 8px; font: 11px/1.5 var(--brand); overflow-wrap: anywhere; }
 .mission-review summary { cursor: pointer; }
 .mission-review-controls label { display: grid; gap: 6px; }
@@ -433,3 +433,24 @@
 .mission-review-votes[open] > summary { margin-bottom: 8px; }
 .mission-review-votes p:last-child { margin-bottom: 0; }
 .mission-review summary:focus-visible { outline: 2px solid #8b571e; outline-offset: 2px; border-radius: 3px; }
+
+/* Working files use folder hierarchy instead of table rows. */
+.workspace-browser .workspace-file-tree { display: block; padding: 0; border: 0; font: 12px/1.5 var(--brand); }
+.workspace-file-tree ul { list-style: none; margin: 0; padding: 0; }
+.workspace-file-tree details > ul { margin-left: 17px; padding-left: 8px; border-left: 1px solid #e3e5db; }
+.workspace-file-tree summary, .browser-colony .workspace-file-tree button { display: flex; align-items: center; gap: 7px; width: 100%; min-height: 30px; box-sizing: border-box; padding: 4px 6px; border: 0; border-radius: 4px; background: transparent; color: #384332; text-align: left; font: 12px/1.5 var(--brand); cursor: pointer; }
+.workspace-file-tree summary { list-style: none; }
+.workspace-file-tree summary::-webkit-details-marker { display: none; }
+.workspace-file-tree svg { flex: none; color: #77816f; }
+.workspace-file-tree details[open] > summary .file-tree-chevron { transform: rotate(90deg); }
+.workspace-file-tree span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.workspace-file-tree small { margin-left: auto; white-space: nowrap; font-size: 10px; color: #899181; }
+.workspace-file-tree .file-tree-submitted { padding: 1px 5px; border-radius: 4px; background: #e2eadb; color: #536749; }
+.workspace-file-tree .file-tree-submitted + small { margin-left: 0; }
+.workspace-file-tree summary:focus-visible { outline: 2px solid #8b571e; outline-offset: 1px; }
+@media (hover: hover) { .workspace-file-tree summary:hover, .browser-colony .workspace-file-tree button:hover { background: #eeeee6; } }
+
+.mission-review > .mission-review-votes { margin-left: auto; }
+.mission-review > .mission-review-votes[open] { flex-basis: 100%; margin-left: 0; }
+.mission-review > .mission-review-controls, .mission-review > details:not(.mission-review-votes) { flex-basis: 100%; }
+.browser-colony .mission-review > .forum-submission-link { min-width: 0; padding: 0; background: transparent; }
