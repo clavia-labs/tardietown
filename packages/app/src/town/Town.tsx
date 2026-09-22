@@ -1,3 +1,4 @@
+import type { McpCommand, McpConnectionInfo, McpUpdateResult } from "./packages/mcp-types"
 import type { ReadResidentEvents } from "./actors/resident/events"
 import { Wrench, MessagesSquare, FolderOpen, Library } from "lucide-react"
 import { PackagesPanel } from "./packages/PackagesPanel"
@@ -21,6 +22,8 @@ import type { shuffleDuckPalettes } from "./scene/duckPalettes"
 import { useCallback, useState, type ReactNode } from "react"
 
 export function Town({
+  mcp,
+  onMcp,
   readResidentEvents,
   packages = [],
   onUpdatePackage,
@@ -47,6 +50,8 @@ export function Town({
   error,
   footerActions
 }: {
+  mcp?: readonly McpConnectionInfo[] | undefined
+  onMcp?: ((command: McpCommand) => Promise<McpUpdateResult>) | undefined
   readResidentEvents?: ReadResidentEvents | undefined
   packages?: readonly TownPackage[] | undefined
   onUpdatePackage?: ((update: PackageUpdate) => Promise<void>) | undefined
@@ -161,7 +166,7 @@ export function Town({
             </p>
           )}
         </section>
-        {packagesOpen && <PackagesPanel packages={packages} onUpdate={onUpdatePackage} onClose={() => setPackagesOpen(false)} />}
+        {packagesOpen && <PackagesPanel mcp={mcp} onMcp={onMcp} packages={packages} onUpdate={onUpdatePackage} onClose={() => setPackagesOpen(false)} />}
         {selected && <ResidentProfile key={selected.id} resident={selected} readEvents={readResidentEvents} karma={karma[selected.id] ?? 0} messages={messages} onClose={closeProfile} />}
         {libraryOpen && <LibraryBrowser entries={library} read={readLibrary} residents={residents} onClose={closeLibrary} />}
         {workspaceOpen && <WorkspaceBrowser missions={missions} reader={workspaceReader} artifacts={artifacts} readArtifact={readArtifact} residents={residents} onClose={closeWorkspace} initialPath={artifactTarget?.path} initialRevision={artifactTarget?.revision} />}

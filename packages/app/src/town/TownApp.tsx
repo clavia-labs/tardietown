@@ -241,6 +241,8 @@ function ServerColony({
     <>
       {snapshot ? (
         <Town
+          mcp={snapshot.mcp}
+          onMcp={snapshot.mcp ? async command => { const result = await connection.updateMcp(command); receiveSnapshot(await connection.snapshot()); return result } : undefined}
           readResidentEvents={connection.readResidentEvents}
           packages={snapshot.packages}
           onUpdatePackage={snapshot.packages ? async update => { receiveSnapshot(await connection.updatePackage(update)) } : undefined}

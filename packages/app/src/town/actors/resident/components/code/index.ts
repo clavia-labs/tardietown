@@ -1,3 +1,4 @@
+import { mcpPackages } from "./mcp"
 import { codeMode } from "tardie/agent"
 import { workspacePackage, type WorkspacePolicy } from "tardie/code"
 import { exaPackage, type ExaPolicy } from "./exa"
@@ -8,6 +9,7 @@ export function code(
 ) {
   return codeMode([
     exaPackage(researchPolicy),
+    mcpPackages(),
     workspacePackage({ policy: workspacePolicy })
   ])
 }

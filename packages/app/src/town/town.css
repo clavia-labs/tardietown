@@ -538,3 +538,16 @@
 .packages-panel .package-credential button:hover { background: #eeeee6; }
 .packages-panel .package-entry form { margin-left: 46px; }
 .package-list { margin-right: -20px; padding-right: 20px; scrollbar-width: thin; scrollbar-gutter: stable; }
+.mcp-settings { padding-top: 16px; }
+.mcp-settings button { display: inline-flex; align-items: center; gap: 4px; }
+.mcp-add-form { display: grid; gap: 10px; margin: 14px 0; }
+.mcp-add-form label { display: grid; gap: 4px; font: 12px var(--brand); }
+.mcp-add-form input, .mcp-add-form select { min-width: 0; width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #c7cbbf; border-radius: 5px; background: transparent; color: #384332; }
+.mcp-actions { display: flex; gap: 6px; margin-bottom: 8px; }
+.mcp-tool { display: flex; align-items: flex-start; gap: 8px; padding: 8px 0; font: 12px var(--brand); }
+.mcp-tool input { flex: none; width: auto; margin-top: 3px; }
+.mcp-tool span { min-width: 0; }
+.mcp-tool strong { overflow-wrap: anywhere; }
+.mcp-tool small { display: block; margin-top: 3px; color: #77816f; font: 11px/1.4 var(--brand); overflow-wrap: anywhere; }
+.mcp-server-url { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mcp-sign-in { display: block; margin: 12px 0; color: #8b571e; }

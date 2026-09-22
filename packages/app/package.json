@@ -10,6 +10,7 @@
     "dev:colony-server": "bun run server/main.ts"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@tardietown/characters": "workspace:*",
     "effect": "4.0.0-rc.115",
     "lucide-react": "^1.40.0",

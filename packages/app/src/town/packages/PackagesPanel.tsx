@@ -1,7 +1,9 @@
+import { McpPanel } from "./McpPanel"
+import type { McpCommand, McpConnectionInfo, McpUpdateResult } from "./mcp-types"
 import { useState } from "react"
 import { LockKeyhole, Wrench, FolderOpen, X } from "lucide-react"
 import type { PackageUpdate, TownPackage } from "./types"
-export function PackagesPanel({ packages, onUpdate, onClose }: { packages: readonly TownPackage[]; onUpdate?: ((update: PackageUpdate) => Promise<void>) | undefined; onClose: () => void }) {
+export function PackagesPanel({ packages, onUpdate, onClose, mcp = [], onMcp }: { mcp?: readonly McpConnectionInfo[] | undefined; onMcp?: ((command: McpCommand) => Promise<McpUpdateResult>) | undefined; packages: readonly TownPackage[]; onUpdate?: ((update: PackageUpdate) => Promise<void>) | undefined; onClose: () => void }) {
   const [key, setKey] = useState("")
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -27,7 +29,9 @@ export function PackagesPanel({ packages, onUpdate, onClose }: { packages: reado
         <div className="package-credential"><LockKeyhole size={13} aria-hidden="true" /><span>{pkg.credential === "configured" ? "Key configured" : "API key needed"}</span><button type="button" disabled={saving} onClick={() => { setEditing(value => !value); setKey("") }}>{pkg.credential === "configured" ? "Replace key" : "Add key"}</button>{pkg.credential === "configured" && <button disabled={saving} type="button" onClick={() => void save({ id: "exa", removeKey: true })}>Remove</button>}</div>
         {editing && <form onSubmit={event => { event.preventDefault(); if (key.trim()) void save({ id: "exa", apiKey: key }) }}><label>Exa API key<input type="password" autoComplete="off" spellCheck={false} autoCapitalize="none" autoFocus value={key} onChange={event => setKey(event.target.value)} disabled={saving} required /></label><div><button type="button" disabled={saving} onClick={() => { setEditing(false); setKey("") }}>Cancel</button><button type="submit" disabled={saving || !key.trim()}>{saving ? "Saving…" : "Save key"}</button></div></form>}
       </>}
-    </section>)}</div>
+    </section>)}
+    {onMcp && <McpPanel connections={mcp} update={onMcp} />}
+    </div>
     {error && <p role="alert">{error}</p>}
     <p className="artifact-meta">Keys stay on the server for this town’s session. Changes apply to new requests. API charges are separate.</p>
   </aside>

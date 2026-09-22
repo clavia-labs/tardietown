@@ -158,3 +158,33 @@ Changes apply to subsequent tool requests; in-flight requests may finish.
 Authenticated `POST /api/colonies/:id/packages` accepts Exa settings. Research API
 charges remain separate from the model budget. A backend restart clears towns
 and their credential overrides.
+
+### MCP packages
+
+In **Packages → Add MCP package**, enter a name and remote MCP server URL.
+Connect with no authentication, an API key (Bearer or a custom header), or OAuth.
+OAuth uses a separate sign-in tab; servers that require a pre-registered public
+client can use the Client ID field. Connections support Streamable HTTP over
+HTTPS, or HTTP on localhost. Local stdio processes are not supported.
+
+After connection, select the tools residents may use. A server named Notion becomes
+`notion`, with discovered tools exposed directly, for example
+`await notion.search({ query: "Project notes" })` if the server provides `search`.
+The model receives each enabled method's description and input schema. Names
+that cannot be used in JavaScript are normalized; the panel shows the actual
+`package.method` names. Reconnect refreshes discovery and preserves selections.
+
+`PackageInstalled`, `PackageUpdated`, and `PackageRemoved` events are committed to
+resident logs. The MCP component derives the code-mode package scope from those
+events, without rebuilding residents or losing their history. Events contain
+connection IDs and tool definitions, never authentication data. Package changes
+are available to subsequent model calls; they do not start a resident turn.
+Disabled or removed tools are checked again at invocation time. Calls already in
+flight may finish. Failed external calls are not automatically retried.
+
+OAuth state, PKCE verifiers, API keys, and access/refresh tokens stay in server
+memory, scoped to the town. Restarting clears connections along with the town.
+The authenticated `/api/colonies/:id/mcp` endpoint manages connections; the OAuth
+callback validates a short-lived, single-use state. Only MCP tools are exposed;
+resources and prompts are not imported. External service charges are separate
+from the model budget.

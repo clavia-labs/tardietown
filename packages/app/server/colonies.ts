@@ -1,3 +1,6 @@
+import { McpConnections } from "./mcp/connections"
+import { mcpLayer } from "../src/town/actors/resident/components/code/mcp"
+import type { McpCommand } from "../src/town/packages/mcp-types"
 import { residentEvent } from "./resident-events"
 import type { ResidentEventPage } from "../src/town/actors/resident/events"
 import { TownPackages } from "./packages"
@@ -96,6 +99,7 @@ export function createColonyService(options: ColonyServerOptions) {
     throw new Error("Invalid colony server limits.")
   type Record = {
     token: string
+    mcp: McpConnections
     readEvents: (resident: string, cursor: number) => Promise<ResidentEventPage>
     packages: TownPackages
     budget: TownBudget
@@ -240,6 +244,12 @@ export function createColonyService(options: ColonyServerOptions) {
       })
       const packages = new TownPackages(options.exa?.apiKey)
       let budgetSession: ForumSession | undefined
+      const mcp = new McpConnections(() => budgetSession?.budgetChanged(), async event => {
+        const runtime = await hostBackend(host).ensure(id)
+        for (const resident of residents) await runtime.commitRoot(runtime.self(resident.id), { ...event })
+        runtime.schedule()
+      })
+      provisionalHosts.push(mcp)
       const budget = new TownBudget(input.budgetUsd ?? 1, () => budgetSession?.budgetChanged())
       const definition = createResearchActor(
         input.maxToolCalls,
@@ -253,6 +263,7 @@ export function createColonyService(options: ColonyServerOptions) {
         layersFor: (thread) =>
           Layer.mergeAll(
             options.layers,
+            mcpLayer({ call: (connection, tool, args, signal) => mcp.call(connection, tool, args, signal) }),
             forumLayer(forumDispatcher(thread)),
             artifactLayer(artifactDispatcher, thread),
             missionLayer(missions, (command, operationId) => Effect.tryPromise((signal) =>
@@ -314,6 +325,7 @@ export function createColonyService(options: ColonyServerOptions) {
             },
             close: async () => {
               await Promise.allSettled([
+                mcp.close(),
                 host.close(),
                 artifactHost.close(),
                 libraryHost.close(),
@@ -354,11 +366,12 @@ export function createColonyService(options: ColonyServerOptions) {
           if (expiryTimer !== undefined) clearTimeout(expiryTimer)
         }
         const record: Record = {
+          mcp,
           readEvents: async (resident, cursor) => {
             const runtime = await hostBackend(host).ensure(id)
             const rows = await runtime.readPage(resident, cursor, 51)
             const page = rows.slice(0, 50)
-            return { events: page.map(row => residentEvent(row, packages.exa().apiKey)), cursor: page.at(-1)?.seq ?? cursor, hasMore: rows.length > 50 }
+            return { events: page.map(row => JSON.parse(mcp.redact(JSON.stringify(residentEvent(row, packages.exa().apiKey))))), cursor: page.at(-1)?.seq ?? cursor, hasMore: rows.length > 50 }
           },
           packages,
           budget,
@@ -407,6 +420,7 @@ export function createColonyService(options: ColonyServerOptions) {
             library: library.list(),
             policy: board.policy,
             state: current.snapshot(),
+            mcp: mcp.snapshot(),
             packages: packages.snapshot(),
             model: info.model,
             maxConcurrent: input.maxConcurrent,
@@ -438,6 +452,13 @@ export function createColonyService(options: ColonyServerOptions) {
     if (origin && origin !== url.origin)
       return json({ error: "Cross-origin requests are not allowed." }, 403)
     try {
+      if (url.pathname === "/api/mcp/callback" && request.method === "GET") {
+        const state = url.searchParams.get("state")
+        const record = state && [...colonies.values()].find(record => record.mcp.ownsState(state))
+        if (!record) return new Response("Authorization expired or invalid. Return to Packages and connect again.", { status: 400 })
+        await record.mcp.callback(url.searchParams)
+        return new Response("Connected. You can close this tab and return to Packages to select tools.", { headers: { "Content-Type": "text/plain", "Cache-Control": "no-store", "Referrer-Policy": "no-referrer" } })
+      }
       if (url.pathname === "/api/colony-config" && request.method === "GET")
         return json(info)
       if (url.pathname === "/api/colonies" && request.method === "POST")
@@ -446,7 +467,7 @@ export function createColonyService(options: ColonyServerOptions) {
           201
         )
       const match =
-        /^\/api\/colonies\/([^/]+)(?:\/(events|pause|resume|budget|packages|resident-events|post|artifact|library|workspace|review))?$/.exec(
+        /^\/api\/colonies\/([^/]+)(?:\/(events|pause|resume|budget|packages|mcp|resident-events|post|artifact|library|workspace|review))?$/.exec(
           url.pathname
         )
       if (!match) return json({ error: "Not found" }, 404)
@@ -456,6 +477,9 @@ export function createColonyService(options: ColonyServerOptions) {
         request.headers.get("authorization") !== `Bearer ${record.token}`
       )
         return json({ error: "Colony not found or access expired." }, 404)
+      if (match[2] === "mcp" && request.method === "POST") {
+        return json(await record.mcp.command(await request.json() as McpCommand, `${url.origin}/api/mcp/callback`))
+      }
       if (match[2] === "resident-events" && request.method === "GET") {
         const resident = url.searchParams.get("resident") ?? ""
         const cursor = Number(url.searchParams.get("cursor") ?? 0)

@@ -1,3 +1,4 @@
+import type { McpConnectionInfo } from "./packages/mcp-types"
 import type { TownPackage } from "./packages/types"
 import type { Artifact } from "./actors/artifacts/store"
 import type { ForumMessage, ForumPolicy } from "./actors/resident/components/forum"
@@ -22,6 +23,7 @@ export interface ServerColonyOptions {
   budgetUsd?: number
 }
 export interface ColonySnapshot {
+  mcp?: readonly McpConnectionInfo[]
   packages?: readonly TownPackage[]
   id: string
   config: WorldConfig
