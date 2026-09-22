@@ -76,7 +76,6 @@
 @media(max-width:760px) { .browser-posts { margin-right: -14px; padding-right: 14px; } }
 .board-author { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; }
 .duck-avatar { width: 32px; height: 32px; flex: none; }
-.board-user-avatar { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 5px; background: #e9eadd; color: #717b68; font: 12px var(--mono); }
 
 .entry-land { position: relative; }
 .entry-demo-caption { position: absolute; bottom: 4px; left: 12px; font: 10px var(--mono); color: var(--faint); pointer-events: none; }

@@ -54,9 +54,7 @@ export function ForumBoard({
   const authorLine = (message: ForumMessage) => (
     <div className="board-author">
       {message.author === "user" ? (
-        <span className="board-user-avatar" aria-hidden="true">
-          Y
-        </span>
+        <ResidentAvatar index="user" />
       ) : (
         <ResidentAvatar index={Math.max(0, residents.findIndex((resident) => resident.id === message.author))} />
       )}

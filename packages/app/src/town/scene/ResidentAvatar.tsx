@@ -3,8 +3,9 @@ import * as THREE from "three"
 import { createHuman } from "@tardietown/characters"
 import { residentAppearance } from "./residentAppearance"
 
-const portraits = new Map<number, string>()
-function portrait(index: number) {
+type PortraitIdentity = number | "user"
+const portraits = new Map<PortraitIdentity, string>()
+function portrait(index: PortraitIdentity) {
   const cached = portraits.get(index)
   if (cached) return cached
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true })
@@ -14,7 +15,12 @@ function portrait(index: number) {
   const light = new THREE.DirectionalLight(0xfff4df, 3)
   light.position.set(-3, 6, 4)
   scene.add(light)
-  const human = createHuman(residentAppearance(index))
+  const appearance = residentAppearance(index === "user" ? 0 : index)
+  const human = createHuman(index === "user" ? {
+    ...appearance,
+    palette: { ...appearance.palette, shirt: "#6d8599" },
+    accessories: { cap: true, glasses: false, backpack: false }
+  } : appearance)
   scene.add(human.root)
   const camera = new THREE.OrthographicCamera(-0.55, 0.55, 0.55, -0.55, 0.1, 20)
   camera.position.set(2.5, 2.5, 5)
@@ -27,7 +33,7 @@ function portrait(index: number) {
   portraits.set(index, image)
   return image
 }
-export function ResidentAvatar({ index }: { index: number }) {
+export function ResidentAvatar({ index }: { index: PortraitIdentity }) {
   const [src, setSrc] = useState<string>()
   useEffect(() => { setSrc(portrait(index)) }, [index])
   return src ? <img className="duck-avatar" src={src} alt="" /> : <span className="duck-avatar" />
