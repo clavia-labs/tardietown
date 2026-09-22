@@ -32,10 +32,9 @@ const request = serviceMethod({
   output: ArtifactResponseSchema,
   execute: (input: ArtifactRequest) => Effect.map(ArtifactWorkspace, (store): ArtifactResponse => {
     if (input.kind === "list") return { kind: "list", files: store.list(), policy: store.policy }
-    if (input.kind === "read") { const artifact = store.read(input.path, input.revision); return { kind: "read", ...(artifact ? { artifact } : {}), history: store.history(input.path) } }
+    if (input.kind === "read") { const artifact = store.readFor(input.author, input.path, input.revision); return { kind: "read", ...(artifact ? { artifact } : {}), history: store.history(input.path) } }
     if (input.kind === "history") return { kind: "history", history: store.history(input.path) }
-    const result = store.publish(input.author, input.operationId, { path: input.path, content: input.content, summary: input.summary, expectedRevision: input.expectedRevision })
-    if (result.ok) return { kind: "publish", ...result }
+    const result = { ok: false as const, error: "Publish through submit_mission from an owned mission workspace.", policy: store.policy }
     const currentRevision = "currentRevision" in result && typeof result.currentRevision === "number" ? result.currentRevision : undefined
     return { kind: "publish", ok: false, error: result.error, policy: "policy" in result ? result.policy : store.policy, ...(currentRevision === undefined ? {} : { currentRevision }) }
   })

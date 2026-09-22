@@ -2,11 +2,11 @@ import { TownLogs } from "./logs"
 import { createForumActor, forumStateLayer } from "../src/town/actors/forum/actor"
 import type { UserForumCommand } from "../src/town/actors/forum/user"
 import { mkdirSync, writeFileSync, renameSync } from "node:fs"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
 import { ArtifactStore, type ArtifactPolicy } from "../src/town/actors/artifacts/store"
 import { artifactLayer } from "../src/town/actors/resident/components/artifacts"
 import { createArtifactActor, artifactWorkspaceLayer, type ArtifactActorDispatcher } from "../src/town/actors/artifacts/actor"
-import { MissionStore, DEFAULT_MISSION_POLICY, type MissionPolicy } from "../src/town/actors/forum/missions/store"
+import { MissionStore, DEFAULT_MISSION_POLICY, type MissionPolicy, type MissionResult, type MissionCommand } from "../src/town/actors/forum/missions/store"
 import { missionLayer } from "../src/town/actors/resident/components/missions"
 import { LibraryStore, DEFAULT_LIBRARY_POLICY, type LibraryPolicy } from "../src/town/actors/library/store"
 import { createLibraryActor, libraryCollectionLayer, type LibraryActorDispatcher } from "../src/town/actors/library/actor"
@@ -95,6 +95,7 @@ export function createColonyService(options: ColonyServerOptions) {
     missions: MissionStore
     library: LibraryStore
     post: (command: UserForumCommand, operationId: string) => Promise<ForumResult>
+    review: (command: Extract<MissionCommand, { type: "review_mission" }>, operationId: string) => Promise<MissionResult>
     readArtifact: (path: string, revision?: number) => Promise<unknown>
     readLibrary: (id: string) => Promise<unknown>
     closeMissionRuntime: () => void
@@ -164,7 +165,14 @@ export function createColonyService(options: ColonyServerOptions) {
         board.snapshot()[0]!.id,
         residents.map(({ id }) => id),
         artifacts,
-        info.missionPolicy
+        info.missionPolicy,
+        Date.now,
+        logs ? (missionId, file) => {
+          const target = join(logs.directory, "missions", missionId, file.path)
+          mkdirSync(dirname(target), { recursive: true, mode: 0o700 })
+          writeFileSync(`${target}.tmp`, file.content, { mode: 0o600 })
+          renameSync(`${target}.tmp`, target)
+        } : undefined
       )
       const library = new LibraryStore(info.libraryPolicy)
       const forumHost = await createBunHost({
@@ -324,6 +332,10 @@ export function createColonyService(options: ColonyServerOptions) {
             { command, operationId },
             { key: JSON.stringify(["user-post", operationId]) }
           ),
+          review: (command, operationId) => forumThread.mission(
+            { author: "user", operationId, command },
+            { key: JSON.stringify(["mission", "user", operationId]) }
+          ),
           readArtifact: async (path, revision) => {
             const operationId = crypto.randomUUID()
             const response = await Effect.runPromise(artifactDispatcher.request(
@@ -394,7 +406,7 @@ export function createColonyService(options: ColonyServerOptions) {
           201
         )
       const match =
-        /^\/api\/colonies\/([^/]+)(?:\/(events|pause|resume|post|artifact|library))?$/.exec(
+        /^\/api\/colonies\/([^/]+)(?:\/(events|pause|resume|post|artifact|library|workspace|review))?$/.exec(
           url.pathname
         )
       if (!match) return json({ error: "Not found" }, 404)
@@ -404,6 +416,19 @@ export function createColonyService(options: ColonyServerOptions) {
         request.headers.get("authorization") !== `Bearer ${record.token}`
       )
         return json({ error: "Colony not found or access expired." }, 404)
+      if (match[2] === "workspace" && request.method === "GET") {
+        const missionId = url.searchParams.get("missionId") ?? ""
+        if (!record.missions.list().some(mission => mission.id === missionId)) return json({ error: "Mission not found." }, 404)
+        const path = url.searchParams.get("path")
+        if (path === null) return json(record.missions.workspace.list(missionId))
+        const file = record.missions.workspace.read(missionId, path)
+        return file ? json(file) : json({ error: "File not found." }, 404)
+      }
+      if (match[2] === "review" && request.method === "POST") {
+        const input = await request.json() as { missionId?: unknown; reviewId?: unknown; decision?: unknown; reason?: unknown; operationId?: unknown }
+        if (typeof input.missionId !== "string" || typeof input.reviewId !== "string" || typeof input.reason !== "string" || !input.reason.trim() || typeof input.operationId !== "string" || !input.operationId || (input.decision !== "approve" && input.decision !== "request_changes")) return json({ error: "Invalid review." }, 400)
+        return json(await record.review({ type: "review_mission", missionId: input.missionId, reviewId: input.reviewId, decision: input.decision, reason: input.reason }, input.operationId))
+      }
       if (match[2] === "artifact" && request.method === "GET") {
         const path = url.searchParams.get("path") ?? ""
         const revision = url.searchParams.has("revision") ? Number(url.searchParams.get("revision")) : undefined

@@ -193,6 +193,15 @@ export class ForumSession {
       if (!previous) continue
       const event = mission.history.at(-1)
       if (!event || previous.history.length === mission.history.length) continue
+      if (event.action === "review_submitted") {
+        for (const resident of this.residents) if (resident.id !== mission.owner)
+          this.send(resident, `Mission ${mission.id} is ready for review. Read ${mission.artifactPath} revision ${mission.artifactRevision} with read_artifact, independently verify its requirements and sources, then use review_mission with reviewId ${mission.reviewId}. Give a specific reason. Do not vote based only on other reviewers' opinions.`)
+        continue
+      }
+      if ((event.action.startsWith("reviewed:") || event.action === "review_invalidated" || event.action === "completed") && mission.owner && mission.owner !== event.actor) {
+        const owner = this.residents.find(resident => resident.id === mission.owner)
+        if (owner) this.send(owner, `Mission ${mission.id}: ${event.action}. List missions to read reviews. Address requested changes in your mission workspace and submit the revised file for a fresh review.`)
+      }
       if (event.action === "released" || event.action === "claim_expired") {
         for (const resident of this.residents)
           if (resident.id !== event.actor)

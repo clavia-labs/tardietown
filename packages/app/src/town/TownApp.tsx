@@ -274,6 +274,8 @@ function ServerColony({
           library={snapshot.library}
           readLibrary={connection.readLibrary}
           readArtifact={connection.readArtifact}
+          workspaceReader={connection}
+          onReview={connection.reviewMission}
           state={snapshot.state}
           policy={snapshot.policy}
           onSubmit={connection.post}

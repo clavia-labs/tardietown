@@ -9,11 +9,17 @@ const MissionSchema = Schema.Struct({
   id: Schema.String,
   description: Schema.String,
   parentMissionId: Schema.optionalKey(Schema.String),
-  status: Schema.Literals(["open", "claimed", "completed"]),
+  status: Schema.Literals(["open", "claimed", "in_review", "completed"]),
   owner: Schema.optionalKey(Schema.String),
   claimExpiresAt: Schema.optionalKey(Schema.Number),
   artifactPath: Schema.optionalKey(Schema.String),
   artifactRevision: Schema.optionalKey(Schema.Number),
+  reviewId: Schema.optionalKey(Schema.String),
+  reviewFilePath: Schema.optionalKey(Schema.String),
+  reviewFileRevision: Schema.optionalKey(Schema.Number),
+  approvalsRequired: Schema.Number,
+  humanReviewRequired: Schema.Boolean,
+  reviews: Schema.Array(Schema.Struct({ reviewId: Schema.String, reviewer: Schema.String, decision: Schema.Literals(["approve", "request_changes"]), reason: Schema.String, at: Schema.Number, artifactPath: Schema.String, artifactRevision: Schema.Number })),
   requests: Schema.Array(Schema.Struct({ residentId: Schema.String, reason: Schema.String, at: Schema.Number })),
   history: Schema.Array(Schema.Struct({ at: Schema.Number, actor: Schema.String, action: Schema.String }))
 })
@@ -93,6 +99,8 @@ const post = serviceMethod({
     submitUserPost(board, input.command, input.operationId)
   )
 })
+const MissionFileInfoSchema = Schema.Struct({ path: Schema.String, revision: Schema.Number, author: Schema.String, at: Schema.Number })
+const MissionFileSchema = Schema.Struct({ ...MissionFileInfoSchema.fields, content: Schema.String })
 const missionPolicy = Schema.Struct({ claimTtlMs: Schema.Number })
 const mission = serviceMethod({
   name: "forum-mission",
@@ -103,11 +111,15 @@ const mission = serviceMethod({
       Schema.Struct({ type: Schema.Literals(["claim_mission", "release_mission"]), missionId: Schema.String }),
       Schema.Struct({ type: Schema.Literal("request_handoff"), missionId: Schema.String, reason: Schema.String }),
       Schema.Struct({ type: Schema.Literal("transfer_mission"), missionId: Schema.String, toResidentId: Schema.String }),
-      Schema.Struct({ type: Schema.Literal("complete_mission"), missionId: Schema.String, artifactPath: Schema.String })
+      Schema.Struct({ type: Schema.Literal("submit_mission"), missionId: Schema.String, filePath: Schema.String, summary: Schema.String }),
+      Schema.Struct({ type: Schema.Literal("review_mission"), missionId: Schema.String, reviewId: Schema.String, decision: Schema.Literals(["approve", "request_changes"]), reason: Schema.String }),
+      Schema.Struct({ type: Schema.Literal("list_mission_files"), missionId: Schema.String }),
+      Schema.Struct({ type: Schema.Literal("read_mission_file"), missionId: Schema.String, filePath: Schema.String }),
+      Schema.Struct({ type: Schema.Literal("write_mission_file"), missionId: Schema.String, filePath: Schema.String, content: Schema.String, expectedRevision: Schema.Number })
     ])
   }),
   output: Schema.Union([
-    Schema.Struct({ ok: Schema.Literal(true), mission: MissionSchema, policy: missionPolicy }),
+    Schema.Struct({ ok: Schema.Literal(true), mission: MissionSchema, policy: missionPolicy, files: Schema.optionalKey(Schema.Array(MissionFileInfoSchema)), file: Schema.optionalKey(MissionFileSchema) }),
     Schema.Struct({ ok: Schema.Literal(false), error: Schema.String, mission: Schema.optionalKey(MissionSchema), policy: missionPolicy })
   ]),
   // Mission creation and handoffs write to the board. Execute the entire

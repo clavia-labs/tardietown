@@ -1,4 +1,5 @@
-import { ArrowUp, ArrowDown, MessageCircle } from "lucide-react"
+import { ReviewPanel, type ReviewMission } from "./missions/ReviewPanel"
+import { ArrowUp, ArrowDown, MessageCircle, Plus, X } from "lucide-react"
 import Markdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MessageTime } from "../../../ui/MessageTime"
@@ -18,7 +19,9 @@ export function ForumBoard({
   residents,
   palettes,
   missions = [],
-  onArtifact
+  onArtifact,
+  onReview,
+  onClose
 }: {
   policy: ForumPolicy
   onSubmit: (
@@ -29,6 +32,8 @@ export function ForumBoard({
   residents: readonly Resident[]
   palettes: ReturnType<typeof shuffleDuckPalettes>
   missions?: readonly Mission[]
+  onClose: () => void
+  onReview?: ReviewMission | undefined
   onArtifact?: (path: string, revision?: number) => void
 }) {
   const [thread, setThread] = useState<string>()
@@ -69,8 +74,13 @@ export function ForumBoard({
   }
   const missionFlair = (mission?: Mission) => mission && (
     <span className={`forum-mission-status forum-mission-status-${mission.status}`}>
-      Mission · {mission.status}
+      Mission · {mission.status.replace("_", " ")}
     </span>
+  )
+  const submissionLink = (mission?: Mission) => mission?.artifactPath && onArtifact && (
+    <button type="button" className="forum-submission-link" title={mission.artifactPath} onClick={() => onArtifact(mission.artifactPath!, mission.artifactRevision)}>
+      {mission.artifactPath.split("/").at(-1)} · v{mission.artifactRevision}
+    </button>
   )
   const missionDetails = (mission: Mission, detail = false) => {
     const parentMission = mission.parentMissionId ? missionById.get(mission.parentMissionId) : undefined
@@ -83,7 +93,8 @@ export function ForumBoard({
       {detail && parentMission && <button type="button" onClick={() => openThread(parentMission.id)}>Parent mission: {parentMission.description}</button>}
       {detail && children.length > 0 && <div className="forum-mission-children"><small>Child missions</small>{children.map(child => <button type="button" key={child.id} onClick={() => openThread(child.id)}>{child.description}</button>)}</div>}
       {detail && mission.requests.length > 0 && <div className="forum-handoff-requests"><small>Handoff requests</small>{mission.requests.map((request, index) => <p key={`${request.residentId}-${request.at}-${index}`}><strong>{author(request.residentId)}</strong> · {request.reason}</p>)}</div>}
-      {detail && mission.artifactPath && onArtifact && <button type="button" className="forum-mission-artifact" onClick={() => onArtifact(mission.artifactPath!, mission.artifactRevision)}>Open final artifact{mission.artifactRevision ? ` · v${mission.artifactRevision}` : ""}</button>}
+      {detail && submissionLink(mission)}
+      {detail && <ReviewPanel key={`${mission.id}-${mission.reviewId}`} mission={mission} residents={residents} onReview={onReview} />}
     </div>
   }
   const submit = async (event: FormEvent) => {
@@ -218,8 +229,9 @@ export function ForumBoard({
             setBody("")
           }}
         >
-          <span aria-hidden="true">+</span>
+          <Plus size={18} strokeWidth={1.75} aria-hidden="true" />
         </button>
+        <button className="forum-close" type="button" onClick={onClose} aria-label="Close forum"><X size={18} strokeWidth={1.75} aria-hidden="true" /></button>
       </div>
       <div className="forum-navigation">
         {!thread && !creating ? (
@@ -239,6 +251,7 @@ export function ForumBoard({
           </>
         ) : visibleThreads.length ? (
           visibleThreads.map((message) => (
+            <div className="forum-thread-entry" key={message.id}>
             <button
               type="button"
               className="forum-thread-card"
@@ -261,6 +274,8 @@ export function ForumBoard({
                 </span>
               </span>
             </button>
+            {submissionLink(missionById.get(message.id))}
+            </div>
           ))
         ) : filter === "missions" ? (
           <p className="forum-hint">No missions yet.</p>

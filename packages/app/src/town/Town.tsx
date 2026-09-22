@@ -1,6 +1,8 @@
+import { WorkspaceBrowser, type WorkspaceReader } from "./actors/forum/missions/WorkspaceBrowser"
+import type { ReviewMission } from "./actors/forum/missions/ReviewPanel"
 import { LibraryBrowser, type ReadLibrary } from "./actors/library/LibraryBrowser"
 import type { LibraryEntry } from "./actors/library/store"
-import { ArtifactBrowser, type ReadArtifact } from "./actors/artifacts/ArtifactBrowser"
+import { type ReadArtifact } from "./actors/artifacts/ArtifactBrowser"
 import type { Artifact } from "./actors/artifacts/store"
 import { ResidentProfile } from "./actors/resident/ResidentProfile"
 import { ColonyPreview } from "./scene/ColonyPreview"
@@ -22,6 +24,8 @@ export function Town({
   artifacts = [],
   missions = [],
   readArtifact,
+  workspaceReader,
+  onReview,
   library = [],
   readLibrary,
   state,
@@ -41,6 +45,8 @@ export function Town({
   karma: Readonly<Record<string, number>>
   artifacts?: readonly Artifact[] | undefined
   missions?: readonly Mission[] | undefined
+  workspaceReader?: WorkspaceReader | undefined
+  onReview?: ReviewMission | undefined
   readArtifact?: ReadArtifact | undefined
   library?: readonly LibraryEntry[] | undefined
   readLibrary?: ReadLibrary | undefined
@@ -136,18 +142,20 @@ export function Town({
             </p>
           )}
         </section>
-        {selected && <ResidentProfile resident={selected} karma={karma[selected.id] ?? 0} messages={messages} onClose={closeProfile} />}
+        {selected && <ResidentProfile key={selected.id} resident={selected} karma={karma[selected.id] ?? 0} messages={messages} onClose={closeProfile} />}
         {libraryOpen && <LibraryBrowser entries={library} read={readLibrary} residents={residents} onClose={closeLibrary} />}
-        {workspaceOpen && <ArtifactBrowser files={artifacts} read={readArtifact} residents={residents} onClose={toggleWorkspace} initialPath={artifactTarget?.path} initialRevision={artifactTarget?.revision} />}
+        {workspaceOpen && <WorkspaceBrowser missions={missions} reader={workspaceReader} artifacts={artifacts} readArtifact={readArtifact} residents={residents} onClose={toggleWorkspace} initialPath={artifactTarget?.path} initialRevision={artifactTarget?.revision} />}
         {boardOpen && !workspaceOpen && !libraryOpen && (
           <ForumBoard
             policy={policy}
             onSubmit={onSubmit}
+            onClose={() => setBoardOpen(false)}
             messages={messages}
             residents={residents}
             palettes={palettes}
             missions={missions}
             onArtifact={openMissionArtifact}
+            onReview={onReview}
           />
         )}
       </div>

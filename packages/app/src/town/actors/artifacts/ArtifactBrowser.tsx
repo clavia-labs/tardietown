@@ -4,7 +4,7 @@ import remarkGfm from "remark-gfm"
 import type { Artifact, ArtifactDocument } from "./store"
 import type { Resident } from "../../world"
 export type ReadArtifact = (path: string, revision?: number) => Promise<{ artifact: ArtifactDocument; history: readonly Artifact[] }>
-export function ArtifactBrowser({ files, read, residents, onClose, initialPath, initialRevision }: { files: readonly Artifact[]; read?: ReadArtifact | undefined; residents: readonly Resident[]; onClose: () => void; initialPath?: string | undefined; initialRevision?: number | undefined }) {
+export function ArtifactBrowser({ files, read, residents, onClose, initialPath, initialRevision, onBack }: { files: readonly Artifact[]; read?: ReadArtifact | undefined; residents: readonly Resident[]; onClose: () => void; onBack?: (() => void) | undefined; initialPath?: string | undefined; initialRevision?: number | undefined }) {
   const [folder, setFolder] = useState("/")
   const [path, setPath] = useState<string>()
   const [revision, setRevision] = useState<number>()
@@ -36,7 +36,7 @@ export function ArtifactBrowser({ files, read, residents, onClose, initialPath, 
   }
   const entries = [...new Set(files.filter(file => file.path.startsWith(folder)).map(file => file.path.slice(folder.length).split("/")[0]!))].sort()
   return <aside className="artifact-browser workspace-browser" aria-label="Shared workspace">
-    <header><h2>Workspace</h2><button type="button" onClick={onClose} aria-label="Close shared workspace">×</button></header>
+    <header>{onBack && <button type="button" onClick={onBack} aria-label="Back to mission files">←</button>}<h2>Published</h2><button type="button" onClick={onClose} aria-label="Close shared workspace">×</button></header>
     <nav><button type="button" disabled={!path && folder === "/"} onClick={() => { if(path) { setPath(undefined); setRevision(undefined) } else setFolder(folder.slice(0,-1).split("/").slice(0,-1).join("/") + "/") }}>← Back</button><span title={path ?? folder}>{path ? path.split("/").at(-1) : folder === "/" ? "All documents" : folder}</span></nav>
     {path ? <>
       {error ? <p role="alert">{error}</p> : !document ? <p role="status">Opening document…</p> : <>

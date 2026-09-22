@@ -1,3 +1,5 @@
+import type { MissionFile, MissionFileInfo } from "./actors/forum/missions/workspace"
+import type { MissionResult } from "./actors/forum/missions/store"
 import type { Artifact, ArtifactDocument } from "./actors/artifacts/store"
 import type {
   ColonySnapshot,
@@ -33,6 +35,9 @@ export function serverConnection(access: ColonyAccess) {
     "Content-Type": "application/json"
   }
   return {
+    listMissionFiles: (missionId: string) => request<MissionFileInfo[]>(`${path}/workspace?missionId=${encodeURIComponent(missionId)}`, { headers }),
+    readMissionFile: (missionId: string, filePath: string) => request<MissionFile>(`${path}/workspace?missionId=${encodeURIComponent(missionId)}&path=${encodeURIComponent(filePath)}`, { headers }),
+    reviewMission: (missionId: string, reviewId: string, decision: "approve" | "request_changes", reason: string, operationId: string) => request<MissionResult>(`${path}/review`, { method: "POST", headers, body: JSON.stringify({ missionId, reviewId, decision, reason, operationId }) }),
     readArtifact: (filePath: string, revision?: number) => request<{ artifact: ArtifactDocument; history: Artifact[] }>(`${path}/artifact?path=${encodeURIComponent(filePath)}${revision === undefined ? "" : `&revision=${revision}`}`, { headers }),
     readLibrary: (id: string) => request<LibraryDocument>(`${path}/library?id=${encodeURIComponent(id)}`, { headers }),
     snapshot: () => request<ColonySnapshot>(path, { headers }),

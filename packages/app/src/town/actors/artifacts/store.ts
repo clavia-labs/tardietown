@@ -8,6 +8,17 @@ export class ArtifactStore {
   private operations = new Map<string, { fingerprint: string; result: ReturnType<ArtifactStore["write"]> }>()
   private listeners = new Set<() => void>()
   private revision = 0
+  private reads = new Map<string, Set<string>>()
+  readFor(author: string, path: string, revision?: number): ArtifactDocument | undefined {
+    const file = this.read(path, revision)
+    if (file) {
+      const seen = this.reads.get(author) ?? new Set<string>()
+      seen.add(JSON.stringify([file.path, file.revision]))
+      this.reads.set(author, seen)
+    }
+    return file
+  }
+  hasRead(author: string, path: string, revision: number): boolean { return this.reads.get(author)?.has(JSON.stringify([path, revision])) ?? false }
   constructor(policy: Partial<ArtifactPolicy> = {}, private persist?: (document: ArtifactDocument) => void) {
     this.policy = { ...DEFAULT_ARTIFACT_POLICY, ...policy }
     if (Object.values(this.policy).some((value) => !Number.isSafeInteger(value) || value < 1)) throw Error("Artifact limits must be positive integers.")

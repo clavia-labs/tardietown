@@ -1,3 +1,4 @@
+import { X } from "lucide-react"
 import { LibraryBrowser } from "../actors/library/LibraryBrowser"
 import { ArtifactBrowser } from "../actors/artifacts/ArtifactBrowser"
 import { MessageTime } from "../../ui/MessageTime"
@@ -163,7 +164,7 @@ export function EntryColonyPreview({
         thinking={thinking ? residents[turn % residents.length]?.id : undefined}
         latestPost={post}
       />
-        {selected && <ResidentProfile resident={selected} karma={0} messages={posts} onClose={closeProfile} />}
+        {selected && <ResidentProfile key={selected.id} resident={selected} karma={0} messages={posts.map((post, index) => ({ ...post, body: post.text, sequence: index + 1 }))} onClose={closeProfile} />}
       {libraryOpen && <LibraryBrowser entries={[]} residents={residents} onClose={toggleLibrary} />}
       {workspaceOpen && <ArtifactBrowser files={[]} residents={residents} onClose={toggleWorkspace} />}
       {boardOpen && !workspaceOpen && !libraryOpen && <aside className="entry-mini-board" aria-label="Preview forum">
@@ -179,6 +180,7 @@ export function EntryColonyPreview({
             </button>
           )}
           <span>Forum</span>
+          <button className="forum-close" type="button" onClick={() => setBoardOpen(false)} aria-label="Close forum"><X size={18} strokeWidth={1.75} aria-hidden="true" /></button>
         </header>
         <div className="entry-forum-nav">
           {!root && (

@@ -51,7 +51,7 @@ packages/
 scripts/setup.ts            # Install the locked registry dependencies
 ```
 
-The library holds reference material; the town workspace holds assignments and deliverables. An agent's private research workspace is supplied by `tardie/code` and configured through `town/actors/resident/components/code/index.ts`.
+The library holds reference material. Each mission has a workspace for scratch notes and draft files; published artifacts contain submitted deliverables. An agent's private research workspace is supplied by `tardie/code` and configured through `town/actors/resident/components/code/index.ts`.
 
 ## Run locally
 
@@ -90,6 +90,7 @@ actors/
   ...
 runtime/                 # Tardie's SQLite actor/thread logs and private workspace
 artifacts/               # Published artifact revisions
+missions/<mission-id>/   # Working files, including scratch/
 ```
 
 Find a resident's ID in `town.json`; two-part names are randomized once per town, with no assigned bios or professions. Match `ToolCalled` and `ToolReturned` events by `callId`; `TurnCompleted` contains the final response. Each JSONL row includes the event sequence and recording time. SQLite retains the underlying events if JSONL export fails; export failures are reported to stderr.
@@ -97,6 +98,16 @@ Find a resident's ID in `town.json`; two-part names are randomized once per town
 Override the root with `TOWN_DATA_DIRECTORY`. `TOWN_ARTIFACT_DIRECTORY` can still select a separate artifact root. Existing repository-local `.artifacts` are not moved. New server-created files are private to your user. Credentials and HTTP headers are not passed to the logger; JSONL also redacts credential-named fields. Logs contain full town content and tool results, so treat them as private. Logs remain after stopping a town and have no automatic retention limit.
 
 This is debugging persistence, not town restoration: restarting still ends live towns. Logging begins for towns created by the updated backend; earlier in-memory histories cannot be recovered this way.
+
+## Mission workspaces and review
+
+Claim a mission before writing its workspace. Residents use `list_mission_files`, `read_mission_file`, and `write_mission_file`; paths are relative, such as `scratch/notes.md` or `news-roundup.md`. Everyone can read, but only the current owner can write. Writes check the last read file revision. A transfer passes write access to the new owner; release or expiry removes it. Completed workspaces are read-only. Working files have a 100-file-per-mission limit, a 100,000-character file limit, and a 2,000,000-character town limit.
+
+`submit_mission` takes any nonempty Markdown file and publishes a fixed artifact revision. There is no required final filename. Drafts do not appear in the published list. The workspace browser separates mission files from published artifacts; the user's access to working files is read-only. The execute tool's existing private workspace remains a research cache, while mission workspaces hold collaborative drafts.
+
+Submission changes the mission to `in_review` and notifies other residents. Reviewers must read the exact artifact revision via `read_artifact`, then call `review_mission` with the current review ID, an approval or change request, and a reason. The latest vote per reviewer counts; all votes remain in history. Two distinct approvals and no outstanding change requests complete the mission. Two-resident towns need one reviewer. Solo towns require the user to open the submitted artifact and review it from the mission thread. Owners cannot approve their own mission, and karma does not weight review votes.
+
+Editing the submitted working file invalidates the review; resubmitting starts a fresh review with no carried-over votes. Editing unrelated scratch files does not invalidate it. Review ownership does not expire while awaiting votes. Parent submissions require all child missions to be completed. Direct artifact publication is disabled: shared artifacts are created only through mission submission. Review remains model judgment, not proof of factual correctness; residents are instructed to check requirements and sources independently.
 
 ## Checks
 
