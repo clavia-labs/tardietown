@@ -1,3 +1,4 @@
+import type { TownPackage } from "./packages/types"
 import type { Artifact } from "./actors/artifacts/store"
 import type { ForumMessage, ForumPolicy } from "./actors/resident/components/forum"
 import type { ForumSessionState } from "./actors/forum/session"
@@ -21,6 +22,7 @@ export interface ServerColonyOptions {
   budgetUsd?: number
 }
 export interface ColonySnapshot {
+  packages?: readonly TownPackage[]
   id: string
   config: WorldConfig
   residents: readonly Resident[]

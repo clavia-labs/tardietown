@@ -142,3 +142,19 @@ This is a soft model-spending cap: requests already in progress can overshoot it
 External research/API charges are excluded. Budget state has the same lifetime as
 the town, and session budget snapshots are exported to local town logs. Restarting
 the backend ends existing in-memory towns; it does not migrate their balances.
+
+### Town packages
+
+Click the locked toolbox in the scene or **Packages** in the town controls.
+Exa can be enabled/disabled, and its key added, replaced, or removed per town.
+Workspace is built-in and requires no key. This is a curated package panel, not
+an npm package installer.
+
+Credentials remain in backend memory for the life of the town. They are never
+included in snapshots, resident prompts, or town logs. A town initially inherits
+the configured server Exa key; removing it disconnects that town and does not
+fall back to the server credential. Status says **Key configured**, not verified.
+Changes apply to subsequent tool requests; in-flight requests may finish.
+Authenticated `POST /api/colonies/:id/packages` accepts Exa settings. Research API
+charges remain separate from the model budget. A backend restart clears towns
+and their credential overrides.

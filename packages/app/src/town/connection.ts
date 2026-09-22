@@ -1,3 +1,4 @@
+import type { PackageUpdate } from "./packages/types"
 import type { MissionFile, MissionFileInfo } from "./actors/forum/missions/workspace"
 import type { MissionResult } from "./actors/forum/missions/store"
 import type { Artifact, ArtifactDocument } from "./actors/artifacts/store"
@@ -41,6 +42,7 @@ export function serverConnection(access: ColonyAccess) {
     readArtifact: (filePath: string, revision?: number) => request<{ artifact: ArtifactDocument; history: Artifact[] }>(`${path}/artifact?path=${encodeURIComponent(filePath)}${revision === undefined ? "" : `&revision=${revision}`}`, { headers }),
     readLibrary: (id: string) => request<LibraryDocument>(`${path}/library?id=${encodeURIComponent(id)}`, { headers }),
     snapshot: () => request<ColonySnapshot>(path, { headers }),
+    updatePackage: (update: PackageUpdate) => request<ColonySnapshot>(`${path}/packages`, { method: "POST", headers, body: JSON.stringify(update) }),
     addBudget: (amountUsd: number, operationId: string) => request<ColonySnapshot>(`${path}/budget`, { method: "POST", headers, body: JSON.stringify({ amountUsd, operationId }) }),
     pause: () =>
       request<ColonySnapshot>(`${path}/pause`, { method: "POST", headers }),

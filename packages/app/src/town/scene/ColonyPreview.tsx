@@ -76,6 +76,7 @@ export function ColonyPreview({
   onResident,
   onWorkspace,
   onLibrary,
+  onPackages,
   artifactCount = 0,
   thinking,
   latestPost: incomingPost,
@@ -90,6 +91,7 @@ export function ColonyPreview({
   onResident?: (id: string) => void
   onWorkspace?: () => void
   onLibrary?: () => void
+  onPackages?: () => void
   artifactCount?: number
   thinking?: string | readonly string[] | undefined
   latestPost?: Post | undefined
@@ -179,6 +181,16 @@ export function ColonyPreview({
       box(shelf, [3, 0.8, 0.3], [-14 + i * 5.4, 7 + row * 16, 5.7], "#eee3cb")
     }
     town.add(shelf)
+    const toolbox = new THREE.Group()
+    toolbox.name = "packageToolbox"
+    toolbox.position.set(96, 0, 96)
+    box(toolbox, [30, 17, 22], [0, 9, 0], "#718578")
+    box(toolbox, [32, 4, 24], [0, 19, 0], "#536b60")
+    box(toolbox, [15, 3, 4], [0, 27, 0], "#46584d")
+    for (const x of [-6, 6]) box(toolbox, [3, 6, 4], [x, 23, 0], "#46584d")
+    box(toolbox, [8, 8, 3], [0, 15, 13], "#c6a263")
+    box(toolbox, [2, 3, 1], [0, 15, 15], "#62533c")
+    town.add(toolbox)
     for (const [x, z] of [
       [-110, -100],
       [-70, -120],
@@ -263,6 +275,7 @@ export function ColonyPreview({
           if (typeof object.userData.residentId === "string") {
             return onResident ? object : undefined
           }
+          if (object.name === "packageToolbox") return onPackages ? object : undefined
           if (object.name === "libraryShelf") return onLibrary ? object : undefined
           if (object.name === "artifactTable") return onWorkspace ? object : undefined
           if (object.name === "messageBoard") return onBoard ? object : undefined
@@ -271,7 +284,7 @@ export function ColonyPreview({
       }
       const board = town.getObjectByName("messageBoard")!
       const originalScales = new Map(
-        town.children.filter((object) => object === board || object.name === "artifactTable" || object.name === "libraryShelf" || object.userData.residentId)
+        town.children.filter((object) => object === board || object.name === "artifactTable" || object.name === "libraryShelf" || object.name === "packageToolbox" || object.userData.residentId)
           .map((object) => [object, object.scale.clone()] as const)
       )
       let zoomFrame = 0
@@ -306,6 +319,7 @@ export function ColonyPreview({
         }
         else if (target === board) onBoard?.()
         else if (target?.name === "artifactTable") onWorkspace?.()
+        else if (target?.name === "packageToolbox") onPackages?.()
         else if (target?.name === "libraryShelf") onLibrary?.()
       }
       canvas.addEventListener("pointermove", hover)
@@ -326,7 +340,7 @@ export function ColonyPreview({
         canvas.removeEventListener("pointerup", click)
       }
     },
-    [onBoard, onResident, onWorkspace, onLibrary, humans, gridSize, residents.length]
+    [onBoard, onResident, onWorkspace, onLibrary, onPackages, humans, gridSize, residents.length]
   )
   useEffect(() => {
     const current = scene.current

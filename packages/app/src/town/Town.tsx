@@ -1,3 +1,6 @@
+import { LockKeyhole } from "lucide-react"
+import { PackagesPanel } from "./packages/PackagesPanel"
+import type { PackageUpdate, TownPackage } from "./packages/types"
 import { SpendBudget } from "./SpendBudget"
 import { WorkspaceBrowser, type WorkspaceReader } from "./actors/forum/missions/WorkspaceBrowser"
 import type { ReviewMission } from "./actors/forum/missions/ReviewPanel"
@@ -17,6 +20,8 @@ import type { shuffleDuckPalettes } from "./scene/duckPalettes"
 import { useCallback, useState, type ReactNode } from "react"
 
 export function Town({
+  packages = [],
+  onUpdatePackage,
   config,
   residents,
   palettes,
@@ -40,6 +45,8 @@ export function Town({
   error,
   footerActions
 }: {
+  packages?: readonly TownPackage[] | undefined
+  onUpdatePackage?: ((update: PackageUpdate) => Promise<void>) | undefined
   config: WorldConfig
   residents: readonly Resident[]
   palettes: ReturnType<typeof shuffleDuckPalettes>
@@ -66,6 +73,8 @@ export function Town({
   error?: string | undefined
   footerActions?: ReactNode
 }) {
+  const [packagesOpen, setPackagesOpen] = useState(false)
+  const togglePackages = useCallback(() => setPackagesOpen(value => !value), [])
   const [selectedResident, setSelectedResident] = useState<string>()
   const toggleResident = useCallback((id: string) => setSelectedResident((selected) => selected === id ? undefined : id), [])
   const closeProfile = useCallback(() => setSelectedResident(undefined), [])
@@ -107,6 +116,7 @@ export function Town({
             onBoard={openBoard}
             onWorkspace={toggleWorkspace}
             onLibrary={toggleLibrary}
+            onPackages={togglePackages}
             artifactCount={artifacts.length}
             thinking={state.running ? state.thinking : []}
             latestPost={
@@ -131,6 +141,7 @@ export function Town({
           </button>
           <button type="button" className="workspace-open" onClick={toggleWorkspace}>Files · {artifacts.length}</button>
           <button type="button" className="workspace-open" onClick={toggleLibrary}>Library · {library.length}</button>
+          <button type="button" className="workspace-open" onClick={togglePackages}><LockKeyhole size={13} aria-hidden="true" /> Packages</button>
           </div>
           <p className="browser-town-status">
             {state.thinking.length
@@ -147,6 +158,7 @@ export function Town({
             </p>
           )}
         </section>
+        {packagesOpen && <PackagesPanel packages={packages} onUpdate={onUpdatePackage} onClose={() => setPackagesOpen(false)} />}
         {selected && <ResidentProfile key={selected.id} resident={selected} karma={karma[selected.id] ?? 0} messages={messages} onClose={closeProfile} />}
         {libraryOpen && <LibraryBrowser entries={library} read={readLibrary} residents={residents} onClose={closeLibrary} />}
         {workspaceOpen && <WorkspaceBrowser missions={missions} reader={workspaceReader} artifacts={artifacts} readArtifact={readArtifact} residents={residents} onClose={closeWorkspace} initialPath={artifactTarget?.path} initialRevision={artifactTarget?.revision} />}

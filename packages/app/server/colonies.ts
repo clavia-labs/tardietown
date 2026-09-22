@@ -1,3 +1,5 @@
+import { TownPackages } from "./packages"
+import type { PackageUpdate } from "../src/town/packages/types"
 import { TownBudget, validBudget } from "../src/town/budget"
 import { hostBackend } from "tardie/bun/create-host"
 import { usageIn } from "tardie/agent"
@@ -92,6 +94,7 @@ export function createColonyService(options: ColonyServerOptions) {
     throw new Error("Invalid colony server limits.")
   type Record = {
     token: string
+    packages: TownPackages
     budget: TownBudget
     session: ForumSession
     board: MemoryForum
@@ -232,6 +235,7 @@ export function createColonyService(options: ColonyServerOptions) {
             )
           ).pipe(Effect.orDie)
       })
+      const packages = new TownPackages(options.exa?.apiKey)
       let budgetSession: ForumSession | undefined
       const budget = new TownBudget(input.budgetUsd ?? 1, () => budgetSession?.budgetChanged())
       const definition = createResearchActor(
@@ -255,7 +259,7 @@ export function createColonyService(options: ColonyServerOptions) {
               )
             ).pipe(Effect.orDie)),
             libraryLayer(libraryDispatcher(thread), thread),
-            exaLayer(options.exa)
+            exaLayer({ ...options.exa, connection: packages.exa })
           )
       })
       provisionalHosts.push(host)
@@ -347,6 +351,7 @@ export function createColonyService(options: ColonyServerOptions) {
           if (expiryTimer !== undefined) clearTimeout(expiryTimer)
         }
         const record: Record = {
+          packages,
           budget,
           token,
           board,
@@ -393,6 +398,7 @@ export function createColonyService(options: ColonyServerOptions) {
             library: library.list(),
             policy: board.policy,
             state: current.snapshot(),
+            packages: packages.snapshot(),
             model: info.model,
             maxConcurrent: input.maxConcurrent,
             maxTurns: input.maxTurns
@@ -431,7 +437,7 @@ export function createColonyService(options: ColonyServerOptions) {
           201
         )
       const match =
-        /^\/api\/colonies\/([^/]+)(?:\/(events|pause|resume|budget|post|artifact|library|workspace|review))?$/.exec(
+        /^\/api\/colonies\/([^/]+)(?:\/(events|pause|resume|budget|packages|post|artifact|library|workspace|review))?$/.exec(
           url.pathname
         )
       if (!match) return json({ error: "Not found" }, 404)
@@ -441,6 +447,11 @@ export function createColonyService(options: ColonyServerOptions) {
         request.headers.get("authorization") !== `Bearer ${record.token}`
       )
         return json({ error: "Colony not found or access expired." }, 404)
+      if (match[2] === "packages" && request.method === "POST") {
+        record.packages.update(await request.json() as PackageUpdate)
+        record.session.budgetChanged()
+        return json(record.snapshot())
+      }
       if (match[2] === "workspace" && request.method === "GET") {
         const missionId = url.searchParams.get("missionId") ?? ""
         if (!record.missions.list().some(mission => mission.id === missionId)) return json({ error: "Mission not found." }, 404)

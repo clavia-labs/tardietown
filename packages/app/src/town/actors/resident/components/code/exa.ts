@@ -13,6 +13,7 @@ export interface ExaPolicy {
   timeoutMs: number
 }
 export interface ExaOptions {
+  connection?: (() => { enabled: boolean; apiKey: string | undefined }) | undefined
   apiKey?: string | undefined
   policy?: Partial<ExaPolicy> | undefined
   fetch?: typeof globalThis.fetch
@@ -67,10 +68,12 @@ export function exaLayer(options: ExaOptions = {}) {
     path: "/search" | "/contents",
     payload: object
   ): Effect.Effect<ExaAnswer> => {
-    if (!options.apiKey?.trim())
+    const connection = options.connection?.() ?? { enabled: true, apiKey: options.apiKey }
+    if (!connection.enabled) return Effect.succeed(failure("Exa is disabled in this town. Enable it in Packages to use web research."))
+    if (!connection.apiKey?.trim())
       return Effect.succeed(
         failure(
-          "Web research is unavailable: the server needs EXA_API_KEY. Do not claim to have searched or fetched a source."
+          "Web research is unavailable: add an Exa API key in Packages. Do not claim to have searched or fetched a source."
         )
       )
     return Effect.tryPromise({
@@ -79,7 +82,7 @@ export function exaLayer(options: ExaOptions = {}) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-api-key": options.apiKey!
+            "x-api-key": connection.apiKey!
           },
           body: JSON.stringify(payload),
           signal: AbortSignal.any([

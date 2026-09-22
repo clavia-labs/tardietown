@@ -497,3 +497,17 @@
 @media (max-width: 600px) {
   .browser-colony-content > .resident-profile { top: 8%; left: 0; max-height: 92%; }
 }
+.packages-panel { z-index: 9; }
+.packages-panel h2 { display: flex; align-items: center; gap: 8px; }
+.package-list { min-height: 0; overflow-y: auto; }
+.package-entry { padding: 14px 0; border-bottom: 1px solid #e3e5db; }
+.package-heading, .package-credential { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.package-heading > :last-child { margin-left: auto; }
+.package-heading strong { font: 500 14px var(--brand); }
+.package-heading label, .package-heading small, .package-credential { font: 11px var(--brand); color: #77816f; }
+.package-entry > p { font: 12px/1.5 var(--brand); margin: 6px 0 12px; }
+.package-entry form { display: grid; gap: 10px; margin-top: 12px; }
+.package-entry form label { display: grid; gap: 6px; font: 12px var(--brand); }
+.package-entry input[type="password"] { width: 100%; box-sizing: border-box; border: 1px solid #c7cbbf; border-radius: 5px; padding: 8px; background: transparent; }
+.package-entry form button + button { margin-left: 6px; }
+.town-places .workspace-open { display: inline-flex; align-items: center; gap: 5px; }
