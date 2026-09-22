@@ -72,10 +72,15 @@ export function ForumBoard({
     setParent(id)
     setBody("")
   }
+  const threadTitle = (message: ForumMessage) => missionById.get(message.id)?.description ?? message.title
+  const threadBody = (message: ForumMessage) => message.body.trim() === threadTitle(message)?.trim() ? "" : message.body
   const missionFlair = (mission?: Mission) => mission && (
-    <span className={`forum-mission-status forum-mission-status-${mission.status}`}>
-      Mission · {mission.status.replace("_", " ")}
-    </span>
+    <div className="forum-mission-flairs">
+      <span className="forum-mission-kind">{mission.parentMissionId ? "Child mission" : "Town mission"}</span>
+      <span className={`forum-mission-status forum-mission-status-${mission.status}`}>
+        {mission.status.replace("_", " ")}
+      </span>
+    </div>
   )
   const submissionLink = (mission?: Mission) => mission?.artifactPath && onArtifact && (
     <button type="button" className="forum-submission-link" title={mission.artifactPath} onClick={() => onArtifact(mission.artifactPath!, mission.artifactRevision)}>
@@ -141,7 +146,7 @@ export function ForumBoard({
     >
       <article>
         {authorLine(message)}
-        <div className="forum-message-body">
+        {threadBody(message) && <div className="forum-message-body">
           {depth > 3 && (
             <small>
               Reply to{" "}
@@ -163,9 +168,9 @@ export function ForumBoard({
                 }
                 return <a href={href} target="_blank" rel="noopener noreferrer" title={href} aria-label={bare ? href : undefined}>{label}{bare && <span className="forum-link-arrow" aria-hidden="true"> ↗</span>}</a>
               }
-            }}>{message.body}</Markdown>
+            }}>{threadBody(message)}</Markdown>
           </div>
-        </div>
+        </div>}
         <div className="forum-post-actions">
         {voteScore(message)}
         <button
@@ -245,7 +250,8 @@ export function ForumBoard({
           <p className="forum-hint">Start a new conversation with the residents.</p>
         ) : root ? (
           <>
-            <h3 className="forum-thread-title">{root.title}{missionFlair(missionById.get(root.id))}</h3>
+            {missionFlair(missionById.get(root.id))}
+            <h3 className="forum-thread-title">{threadTitle(root)}</h3>
             {missionById.get(root.id) && missionDetails(missionById.get(root.id)!, true)}
             {renderMessage(root, 0)}
           </>
@@ -259,9 +265,10 @@ export function ForumBoard({
               onClick={() => openThread(message.id)}
             >
               {authorLine(message)}
-              <h3 className="forum-thread-title">{message.title}{missionFlair(missionById.get(message.id))}</h3>
+              {missionFlair(missionById.get(message.id))}
+              <h3 className="forum-thread-title">{threadTitle(message)}</h3>
               {missionById.get(message.id) && missionDetails(missionById.get(message.id)!)}
-              <p>{message.body}</p>
+              {threadBody(message) && <p>{threadBody(message)}</p>}
               <span className="forum-post-actions">
                 {voteScore(message)}
                 <span className="forum-reply-count"><MessageCircle size={13} aria-hidden="true" />

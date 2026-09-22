@@ -351,3 +351,8 @@
 .mission-files > button > small { padding-top: 2px; white-space: nowrap; text-transform: capitalize; font: 11px/1.5 var(--brand); }
 .workspace-browser .mission-files > button:first-child { padding-top: 4px; }
 .workspace-browser .mission-files > button:hover { background: #eeeee655; }
+
+.forum-mission-flairs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 10px 0 7px; }
+.forum-mission-kind { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #eeeee6; color: #687461; font: 500 10px/1.5 var(--brand); }
+.forum-mission-flairs .forum-mission-status { margin-left: 0; }
+.forum-thread-card .forum-thread-title, .browser-posts > .forum-thread-title { margin: 6px 0 8px; color: #343c31; font: 500 19px/1.35 var(--brand); overflow-wrap: anywhere; }
