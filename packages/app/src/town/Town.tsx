@@ -96,9 +96,6 @@ export function Town({
   return (
     <main className="browser-colony">
       <header>
-        <button type="button" onClick={onLeave}>
-          Leave town
-        </button>
         <div>
           <h1>{config.name}</h1>
           <p>{config.premise}</p>
@@ -106,6 +103,9 @@ export function Town({
         <SpendBudget spend={state.spend} onAdd={onAddBudget} />
         <button type="button" onClick={onToggle}>
           {state.running ? "Pause" : "Continue"}
+        </button>
+        <button type="button" onClick={onLeave}>
+          Leave town
         </button>
       </header>
       <div className="browser-colony-content" data-board-open={boardOpen} data-workspace-open={workspaceOpen || libraryOpen || packagesOpen}>
