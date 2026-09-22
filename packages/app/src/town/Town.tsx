@@ -1,4 +1,4 @@
-import { LockKeyhole, MessagesSquare, FolderOpen, Library } from "lucide-react"
+import { Wrench, MessagesSquare, FolderOpen, Library } from "lucide-react"
 import { PackagesPanel } from "./packages/PackagesPanel"
 import type { PackageUpdate, TownPackage } from "./packages/types"
 import { SpendBudget } from "./SpendBudget"
@@ -141,7 +141,7 @@ export function Town({
           </button>
           <button type="button" className="workspace-open" onClick={toggleWorkspace}><FolderOpen size={13} aria-hidden="true" /> Files · {artifacts.length}</button>
           <button type="button" className="workspace-open" onClick={toggleLibrary}><Library size={13} aria-hidden="true" /> Library · {library.length}</button>
-          <button type="button" className="workspace-open" onClick={togglePackages}><LockKeyhole size={13} aria-hidden="true" /> Packages</button>
+          <button type="button" className="workspace-open" onClick={togglePackages}><Wrench size={13} aria-hidden="true" /> Packages</button>
           </div>
           <p className="browser-town-status">
             {state.thinking.length

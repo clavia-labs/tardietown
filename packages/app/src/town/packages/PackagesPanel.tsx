@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { LockKeyhole, X } from "lucide-react"
+import { LockKeyhole, Wrench, X } from "lucide-react"
 import type { PackageUpdate, TownPackage } from "./types"
 export function PackagesPanel({ packages, onUpdate, onClose }: { packages: readonly TownPackage[]; onUpdate?: ((update: PackageUpdate) => Promise<void>) | undefined; onClose: () => void }) {
   const [key, setKey] = useState("")
@@ -14,7 +14,7 @@ export function PackagesPanel({ packages, onUpdate, onClose }: { packages: reado
     finally { setSaving(false) }
   }
   return <aside className="artifact-browser workspace-browser packages-panel" aria-label="Packages">
-    <header><h2><LockKeyhole size={17} aria-hidden="true" /> Packages</h2><button className="panel-icon-button" type="button" aria-label="Close packages" onClick={onClose}><X size={18} aria-hidden="true" /></button></header>
+    <header><h2><Wrench size={17} aria-hidden="true" /> Packages</h2><button className="panel-icon-button" type="button" aria-label="Close packages" onClick={onClose}><X size={18} aria-hidden="true" /></button></header>
     <p className="artifact-meta">Tools for this town. Keys stay on the server and last for this town’s session.</p>
     {!onUpdate && <p role="status">Restart the backend and start a new town to configure packages.</p>}
     <div className="package-list">{packages.map(pkg => <section className="package-entry" key={pkg.id}>
