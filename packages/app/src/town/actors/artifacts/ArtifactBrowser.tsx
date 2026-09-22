@@ -36,8 +36,8 @@ export function ArtifactBrowser({ files, read, residents, onClose, initialPath, 
   }
   const entries = [...new Set(files.filter(file => file.path.startsWith(folder)).map(file => file.path.slice(folder.length).split("/")[0]!))].sort()
   return <aside className="artifact-browser workspace-browser" aria-label="Shared workspace">
-    <header>{onBack && <button type="button" onClick={onBack} aria-label="Back to mission files">←</button>}<h2>Published</h2><button type="button" onClick={onClose} aria-label="Close shared workspace">×</button></header>
-    <nav><button type="button" disabled={!path && folder === "/"} onClick={() => { if(path) { setPath(undefined); setRevision(undefined) } else setFolder(folder.slice(0,-1).split("/").slice(0,-1).join("/") + "/") }}>← Back</button><span title={path ?? folder}>{path ? path.split("/").at(-1) : folder === "/" ? "All documents" : folder}</span></nav>
+    <header><h2>Published</h2><button type="button" onClick={onClose} aria-label="Close shared workspace">×</button></header>
+    <nav><button type="button" disabled={!path && folder === "/" && !onBack} aria-label={path ? "Back to published files" : folder !== "/" ? "Back to parent folder" : "Back to mission workspace"} onClick={() => { if(path) { setPath(undefined); setRevision(undefined); setRaw(false) } else if (folder !== "/") setFolder(folder.slice(0,-1).split("/").slice(0,-1).join("/") + "/"); else onBack?.() }}>← Back</button><span title={path ?? folder}>{path ? path.split("/").at(-1) : folder === "/" ? "All documents" : folder}</span></nav>
     {path ? <>
       {error ? <p role="alert">{error}</p> : !document ? <p role="status">Opening document…</p> : <>
         <div className="workspace-document-bar">
