@@ -11,6 +11,11 @@ import {
   type WorldConfig
 } from "./world"
 
+const townPrefixes = ["Willow", "Clover", "Maple", "Mossy", "Sunny", "Fern", "Amber", "Pebble", "Cedar", "Hazel", "Moonlit", "Bramble"]
+const townPlaces = ["Haven", "Hollow", "Grove", "Meadow", "Brook", "Vale", "Crossing", "Bay", "Hill", "Creek", "Glade", "Landing"]
+const randomTownName = () =>
+  `${townPrefixes[Math.floor(Math.random() * townPrefixes.length)]} ${townPlaces[Math.floor(Math.random() * townPlaces.length)]}`
+
 export const DEFAULT_ENTRY_CONFIG: Omit<WorldConfig, "name"> = {
   count: DEFAULT_AGENT_COUNT,
   premise:
@@ -31,6 +36,7 @@ export function TownSetup({
   defaults?: Omit<WorldConfig, "name">
 }) {
   const [name, setName] = useState("")
+  const [suggestedName] = useState(randomTownName)
   const [mission, setMission] = useState("")
   const [swarmSize, setSwarmSize] = useState(
     Math.min(defaults.count, maxAgents)
@@ -50,11 +56,11 @@ export function TownSetup({
   )
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    if (name.trim() && mission.trim())
+    if (mission.trim())
       onCreate({
         ...defaults,
         count,
-        name: name.trim(),
+        name: name.trim() || suggestedName,
         premise: mission.trim()
       })
   }
@@ -64,11 +70,10 @@ export function TownSetup({
       <form className="entry-name-form" onSubmit={submit}>
         <input
           id="swarm-name"
-          aria-label="Colony name"
-          placeholder="Name your town"
+          aria-label="Town name (optional)"
+          placeholder={`${suggestedName} (optional)`}
           value={name}
           onChange={(event) => setName(event.target.value)}
-          required
           autoComplete="off"
         />
         <div className="entry-mission-field">
@@ -85,7 +90,7 @@ export function TownSetup({
           <button
             type="submit"
             aria-label="Create colony"
-            disabled={!name.trim() || !mission.trim()}
+            disabled={!mission.trim()}
           >
             <ArrowRight size={22} strokeWidth={1.5} />
           </button>
