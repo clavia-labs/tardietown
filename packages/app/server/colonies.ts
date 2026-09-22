@@ -1,3 +1,6 @@
+import { TownBudget, validBudget } from "../src/town/budget"
+import { hostBackend } from "tardie/bun/create-host"
+import { usageIn } from "tardie/agent"
 import { TownLogs } from "./logs"
 import { createForumActor, forumStateLayer } from "../src/town/actors/forum/actor"
 import type { UserForumCommand } from "../src/town/actors/forum/user"
@@ -89,6 +92,7 @@ export function createColonyService(options: ColonyServerOptions) {
     throw new Error("Invalid colony server limits.")
   type Record = {
     token: string
+    budget: TownBudget
     session: ForumSession
     board: MemoryForum
     artifacts: ArtifactStore
@@ -122,6 +126,7 @@ export function createColonyService(options: ColonyServerOptions) {
     if (
       !input ||
       !input.config ||
+      !validBudget(input.budgetUsd ?? 1) ||
       typeof input.config.name !== "string" ||
       !input.config.name.trim() ||
       typeof input.config.premise !== "string" ||
@@ -148,7 +153,7 @@ export function createColonyService(options: ColonyServerOptions) {
       const residents = makeResidents(config.count, info.maxAgents)
       const logs = options.dataDirectory ? new TownLogs(options.dataDirectory, id, {
         id, createdAt: Date.now(), config, residents, model: info.model,
-        maxConcurrent: input.maxConcurrent, maxTurns: input.maxTurns, maxToolCalls: input.maxToolCalls
+        maxConcurrent: input.maxConcurrent, maxTurns: input.maxTurns, maxToolCalls: input.maxToolCalls, budgetUsd: input.budgetUsd ?? 1
       }) : undefined
       const palettes = shuffleDuckPalettes()
       const board = createMissionForum(config.premise)
@@ -227,6 +232,8 @@ export function createColonyService(options: ColonyServerOptions) {
             )
           ).pipe(Effect.orDie)
       })
+      let budgetSession: ForumSession | undefined
+      const budget = new TownBudget(input.budgetUsd ?? 1, () => budgetSession?.budgetChanged())
       const definition = createResearchActor(
         input.maxToolCalls,
         options.exa?.policy,
@@ -271,9 +278,11 @@ export function createColonyService(options: ColonyServerOptions) {
           board,
           residents,
           {
-            wake: (resident, notification, roster, signal) =>
-              threads.get(resident.id)!.message(
+            wake: async (resident, notification, roster, signal, allowance) => {
+              const budgetUsd = allowance!
+              try { return await threads.get(resident.id)!.message(
                 {
+                  input: { budgetUsd },
                   text: `You are ${resident.name} (${resident.id}). Colony: ${config.name}. Mission: ${config.premise}\nResidents: ${roster.map((member) => `${member.name} (${member.id})`).join(", ")}\nAim for ${config.postWords} words or fewer per post.\n${notification}\nUse read_board to inspect the forum. You may acknowledge and stay silent.`
                 },
                 {
@@ -281,7 +290,21 @@ export function createColonyService(options: ColonyServerOptions) {
                   timeoutMs: config.timeoutMs,
                   signal
                 }
-              ),
+              ) } catch (error) {
+                if (String(error).includes("TOWN_SPEND_ALLOWANCE_EXHAUSTED")) return "TOWN_SPEND_ALLOWANCE_EXHAUSTED"
+                throw error
+              } finally {
+                try {
+                  const runtime = await hostBackend(host).ensure(id)
+                  const events = await runtime.read(resident.id)
+                  const usage = usageIn(events)
+                  const usd = usage.reportedCostUsd ?? usage.estimatedCostUsd
+                  budget.settle(resident.id, { usd: usd ?? 0, estimated: usage.reportedCostUsd === undefined && usd !== undefined, unavailable: usd === undefined })
+                } catch {
+                  budget.settle(resident.id, { usd: 0, estimated: false, unavailable: true })
+                }
+              }
+            },
             close: async () => {
               await Promise.allSettled([
                 host.close(),
@@ -293,8 +316,9 @@ export function createColonyService(options: ColonyServerOptions) {
           },
           input.maxTurns,
           missions,
-          { maxConcurrent: input.maxConcurrent }
+          { maxConcurrent: input.maxConcurrent, budget }
         )
+        budgetSession = session
         const current = session
         let expiryTimer: ReturnType<typeof setTimeout> | undefined
         const scheduleExpiry = () => {
@@ -323,6 +347,7 @@ export function createColonyService(options: ColonyServerOptions) {
           if (expiryTimer !== undefined) clearTimeout(expiryTimer)
         }
         const record: Record = {
+          budget,
           token,
           board,
           artifacts,
@@ -406,7 +431,7 @@ export function createColonyService(options: ColonyServerOptions) {
           201
         )
       const match =
-        /^\/api\/colonies\/([^/]+)(?:\/(events|pause|resume|post|artifact|library|workspace|review))?$/.exec(
+        /^\/api\/colonies\/([^/]+)(?:\/(events|pause|resume|budget|post|artifact|library|workspace|review))?$/.exec(
           url.pathname
         )
       if (!match) return json({ error: "Not found" }, 404)
@@ -501,6 +526,11 @@ export function createColonyService(options: ColonyServerOptions) {
           }
         })
       }
+      if (request.method === "POST" && match[2] === "budget") {
+        const input = await request.json() as { amountUsd: number; operationId: string }
+        record.budget.add(input.amountUsd, input.operationId)
+        return json(record.snapshot())
+      }
       if (request.method === "POST" && match[2] === "pause") {
         record.session.pause()
         return json(record.snapshot())
@@ -508,9 +538,7 @@ export function createColonyService(options: ColonyServerOptions) {
       if (request.method === "POST" && match[2] === "resume") {
         const state = record.session.snapshot()
         if (!state.running)
-          record.session.resume(
-            state.turns >= state.limit ? record.snapshot().maxTurns : 0
-          )
+          record.session.resume()
         return json(record.snapshot())
       }
       if (request.method === "POST" && match[2] === "post") {

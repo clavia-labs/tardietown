@@ -1,3 +1,4 @@
+import type { TownBudget, SpendState } from "../../budget"
 import type { Resident } from "../../world"
 import type { ForumMessage } from "../resident/components/forum"
 import { MemoryForum } from "./store"
@@ -10,6 +11,7 @@ export interface ForumSessionState {
   readonly pending: number
   readonly turns: number
   readonly limit: number
+  readonly spend?: SpendState
   readonly error?: string
 }
 export interface ForumConnection {
@@ -17,13 +19,15 @@ export interface ForumConnection {
     resident: Resident,
     notification: string,
     residents: readonly Resident[],
-    signal: AbortSignal
+    signal: AbortSignal,
+    budgetUsd?: number
   ) => Promise<unknown>
   close: () => Promise<void>
 }
 
 export interface ForumSchedulerOptions {
   readonly maxConcurrent?: number
+  readonly budget?: TownBudget
   readonly random?: () => number
 }
 interface PendingWake {
@@ -41,6 +45,7 @@ export class ForumSession {
   private readonly calls = new Map<string, { abort: AbortController; job: Promise<void> }>()
   private readonly waiting = new Map<string, PendingWake>()
   private readonly maxConcurrent: number
+  private readonly budget: TownBudget | undefined
   private readonly random: () => number
   private drainScheduled = false
   private readonly unsubscribe: () => void
@@ -61,6 +66,7 @@ export class ForumSession {
     this.maxConcurrent = scheduler.maxConcurrent ?? DEFAULT_FORUM_CONCURRENCY
     if (!Number.isSafeInteger(this.maxConcurrent) || this.maxConcurrent < 1)
       throw new Error("Concurrency must be a positive integer.")
+    this.budget = scheduler.budget
     this.random = scheduler.random ?? Math.random
     this.state = { running: false, thinking: [], pending: 0, turns: 0, limit }
     this.unsubscribe = board.subscribe((event) => {
@@ -74,7 +80,8 @@ export class ForumSession {
       )
     }
   }
-  snapshot = () => this.state
+  snapshot = () => ({ ...this.state, ...(this.budget ? { spend: this.budget.snapshot() } : {}) })
+  budgetChanged = () => { this.update({}); this.scheduleDrain() }
   subscribe = (listener: () => void) => {
     this.listeners.add(listener)
     return () => {
@@ -118,7 +125,7 @@ export class ForumSession {
   private drain() {
     while (
       !this.closed && this.state.running &&
-      this.calls.size < this.maxConcurrent && this.state.turns < this.state.limit
+      this.calls.size < this.maxConcurrent && (this.budget ? this.budget.available() > 0.000001 : this.state.turns < this.state.limit)
     ) {
       const eligible = [...this.waiting.values()].filter(({ resident }) => !this.calls.has(resident.id))
       if (!eligible.length) break
@@ -133,10 +140,11 @@ export class ForumSession {
       this.waiting.delete(selected.resident.id)
       this.start(selected)
     }
-    if (!this.calls.size && this.state.turns >= this.state.limit)
+    if (!this.calls.size && (this.budget ? this.budget.available() <= 0.000001 : this.state.turns >= this.state.limit))
       this.update({ running: false })
   }
   private start({ resident, notification, updates }: PendingWake) {
+    const budgetUsd = this.budget?.reserve(resident.id)
     const abort = new AbortController()
     const text = updates === 1 ? notification
       : `${updates} updates are waiting. Read unread forum activity and list missions to catch up. Latest update: ${notification}`
@@ -144,10 +152,12 @@ export class ForumSession {
       .then(() => {
         abort.signal.throwIfAborted()
         this.thinking(resident.id, true)
-        return this.connection.wake(resident, text, this.residents, abort.signal)
+        return this.connection.wake(resident, text, this.residents, abort.signal, budgetUsd)
       })
       .then(
-        () => {},
+        result => {
+          if (result === "TOWN_SPEND_ALLOWANCE_EXHAUSTED") this.send(resident, "Continue your interrupted work. Read the forum and mission workspace first.")
+        },
         (error: unknown) => {
           if (!abort.signal.aborted) {
             this.update({ error: error instanceof Error ? error.message : String(error) })

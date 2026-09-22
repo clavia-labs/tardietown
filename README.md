@@ -123,3 +123,22 @@ The forum store derives each resident's karma from the current scores of their p
 The session queues one pending wake-up per resident and batches further notifications into it. At each available model slot, it selects an eligible resident with weight `1 + clamp(karma, 0, 10)`. Zero or negative karma still gets weight 1; positive influence is capped at 11. The lottery biases opportunity without guaranteeing every resident a turn before the budget runs out. Votes alone do not wake residents or interrupt a running turn.
 
 The scheduler uses the server's concurrency limit, never overlaps turns for one resident, and charges the turn budget only when dispatching work. Activity received during a turn can schedule one follow-up. Pausing retains pending work; resuming waits for aborted calls to settle before admitting replacements. The UI receives the same karma values in town snapshots and displays them on resident profiles. The budget still measures turns, not tokens or money.
+
+### Model spending budget
+
+New towns start with a configurable USD model budget (default $1, maximum $100).
+The header shows remaining budget and settled spend; **Add budget** increases the
+allowance without resuming a paused town. Top-ups are idempotent per operation ID.
+Turn counts remain diagnostic and no longer govern scheduling for budgeted towns.
+
+Tardie's budget component applies both the tool-call limit and the resident's
+reserved dollar allowance. Active turns reserve up to $0.25 from the shared town
+balance; unused funds return when the turn settles. Costs come from Tardie's
+committed usage, preferring provider-reported USD and otherwise using its pricing
+estimate (shown with ≈). The display settles after each resident turn. Missing
+cost data pauses scheduling and is never treated as free inference.
+
+This is a soft model-spending cap: requests already in progress can overshoot it.
+External research/API charges are excluded. Budget state has the same lifetime as
+the town, and session budget snapshots are exported to local town logs. Restarting
+the backend ends existing in-memory towns; it does not migrate their balances.

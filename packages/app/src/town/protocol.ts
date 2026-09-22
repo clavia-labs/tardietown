@@ -18,6 +18,7 @@ export interface ServerColonyOptions {
   maxConcurrent: number
   maxToolCalls: number
   maxTurns: number
+  budgetUsd?: number
 }
 export interface ColonySnapshot {
   id: string

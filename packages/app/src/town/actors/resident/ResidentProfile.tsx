@@ -1,3 +1,4 @@
+import { X as PanelClose } from "lucide-react"
 import { MessageTime } from "../../../ui/MessageTime"
 import type { ForumMessage } from "./components/forum"
 import { residentPointerEvents } from "../../scene/residentPointer"
@@ -37,7 +38,7 @@ export function ResidentProfile({ resident, messages, karma, onClose }: {
   const activity = contributions.filter(message => tab === "posts" ? !message.parentId : !!message.parentId).toReversed()
   return (
     <aside ref={card} className="resident-profile" aria-label={`${resident.name}'s profile`}>
-      <button className="resident-profile-close" ref={close} type="button" onClick={onClose} aria-label="Close resident profile">×</button>
+      <button className="resident-profile-close" ref={close} type="button" onClick={onClose} aria-label="Close resident profile"><PanelClose size={18} strokeWidth={1.75} aria-hidden="true" /></button>
       <div className="resident-profile-identity">
         <ResidentAvatar index={resident.index} />
         <div><h2>{resident.name}</h2><p className="resident-profile-karma">{karma} karma</p></div>

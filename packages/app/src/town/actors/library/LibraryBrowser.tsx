@@ -1,3 +1,4 @@
+import { ArrowLeft as PanelBack, X as PanelClose } from "lucide-react"
 import { useEffect, useState } from "react"
 import type { LibraryEntry, LibraryDocument } from "./store"
 import type { Resident } from "../../world"
@@ -35,9 +36,9 @@ export function LibraryBrowser({ entries, read, residents, onClose }: {
   const source = document?.sourceUrl
   const safeSource = source && /^https?:\/\//i.test(source) ? source : undefined
   return <aside className="artifact-browser library-browser" aria-label="Library">
-    <header><h2>Library</h2><button type="button" onClick={onClose} aria-label="Close library">×</button></header>
+    <header><h2>Library</h2><button className="panel-icon-button" type="button" onClick={onClose} aria-label="Close library"><PanelClose size={18} strokeWidth={1.75} aria-hidden="true" /></button></header>
     {selected ? <>
-      <nav><button type="button" onClick={() => setSelected(undefined)}>← Back</button></nav>
+      <nav><button className="panel-icon-button" aria-label="Back to library" type="button" onClick={() => setSelected(undefined)}><PanelBack size={18} strokeWidth={1.75} aria-hidden="true" /></button></nav>
       {error ? <p role="alert">{error}</p> : !read ? <p>Reading is unavailable.</p> : !document ? <p role="status">Opening reference…</p> : <>
         <h3>{document.title}</h3>
         <p className="artifact-meta">Saved by {author(document.author)} · <time dateTime={new Date(document.at).toISOString()}>{new Date(document.at).toLocaleString()}</time></p>

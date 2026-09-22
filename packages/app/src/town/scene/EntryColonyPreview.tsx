@@ -1,3 +1,4 @@
+import { ArrowLeft as PanelBack } from "lucide-react"
 import { X, Maximize2, Minimize2 } from "lucide-react"
 import { LibraryBrowser } from "../actors/library/LibraryBrowser"
 import { ArtifactBrowser } from "../actors/artifacts/ArtifactBrowser"
@@ -177,7 +178,7 @@ export function EntryColonyPreview({
               aria-label="Back to threads"
               onClick={() => setThread(undefined)}
             >
-              ←
+              <PanelBack size={18} strokeWidth={1.75} aria-hidden="true" />
             </button>
           )}
           <span>Forum</span>

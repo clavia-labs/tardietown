@@ -219,9 +219,6 @@
 .artifact-files small { color: #77816f; }
 .workspace-open { margin-left: 8px; }
 
-.forum-filters { display: flex; gap: 3px; padding: 2px; border: 1px solid #d5d8c8; border-radius: 5px; background: #f2f2ea; }
-.browser-colony .forum-filters button { padding: 4px 7px; border: 0; background: transparent; color: #77816f; font-size: 10px; }
-.browser-colony .forum-filters button[aria-pressed="true"] { background: #faf9f5; color: #44503e; box-shadow: 0 1px 3px #28362916; }
 .forum-mission-details { display: grid; gap: 7px; margin: 4px 0 8px; text-align: left; font: 10px/1.45 var(--mono); color: #76806f; }
 .forum-mission-line { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 12px; }
 .forum-mission-status { display: inline-block; vertical-align: middle; margin-left: 8px; padding: 2px 8px; border-radius: 999px; background: #e4e8dc; color: #53604b; font: 500 10px/1.5 var(--brand); text-transform: capitalize; white-space: nowrap; }
@@ -383,3 +380,45 @@
 @media (min-width: 761px) {
   .entry-land:has(> .entry-mini-board) > .workspace-browser { width: min(520px, calc(100% - 352px)); }
 }
+
+/* Consistent panel controls and compact content rhythm. */
+:is(.artifact-browser, .resident-profile, .browser-board-heading, .entry-mini-board) :is(.panel-icon-button, .forum-back, .forum-close, .forum-expand, .forum-new-post, .resident-profile-close),
+.workspace-options > summary {
+  display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  box-sizing: border-box; width: 30px; height: 30px; padding: 0; border: 0;
+  border-radius: 6px; background: transparent; color: #687461; cursor: pointer;
+}
+:is(.artifact-browser, .resident-profile, .browser-board, .entry-mini-board) button:focus-visible {
+  outline: 2px solid #8b571e; outline-offset: 2px;
+}
+@media (hover: hover) {
+  :is(.artifact-browser, .resident-profile, .browser-board-heading, .entry-mini-board) :is(.panel-icon-button, .forum-back, .forum-close, .forum-expand, .forum-new-post, .resident-profile-close):hover { background: #eeeee6; color: #384332; }
+}
+:is(.panel-icon-button, .forum-back, .forum-close, .forum-expand, .forum-new-post, .resident-profile-close):active { background: #e4e8dc; }
+.artifact-browser > header h2 { margin: 0; font: 500 18px/1.4 var(--brand); }
+.artifact-browser nav { min-width: 0; gap: 8px; }
+.artifact-browser nav > span { min-width: 0; }
+.artifact-document { min-width: 0; overflow-wrap: anywhere; }
+.artifact-document pre { max-width: 100%; overflow-x: auto; }
+.artifact-document table { display: block; max-width: 100%; overflow-x: auto; }
+.workspace-options-panel { box-sizing: border-box; max-width: calc(100vw - 64px); }
+.browser-board .forum-navigation { padding: 4px 0 6px; }
+.browser-board .forum-navigation:has(> span:empty) { display: none; }
+.browser-board .browser-posts { padding-top: 0; padding-bottom: 0; }
+.browser-colony .forum-thread-entry .forum-thread-card { padding-top: 10px; padding-bottom: 6px; }
+.browser-board .forum-thread-entry { padding-bottom: 8px; }
+.browser-board .forum-thread-title { font-size: 18px; line-height: 1.3; }
+.browser-board .forum-thread-card small { margin-top: 5px; }
+
+.browser-colony > header .town-budget { margin-left: auto; display: grid; gap: 2px; flex: none; text-align: right; }
+.town-budget > span { color: #77816f; font: 10px/1.4 var(--brand); }
+.town-budget strong { color: #384332; font: 600 18px/1.3 var(--brand); font-variant-numeric: tabular-nums; }
+.town-budget small { font: 12px var(--brand); }
+.town-budget-balance { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+.town-budget-balance button { display: inline-flex; align-items: center; gap: 4px; }
+.town-budget > small { color: #77816f; font: 10px/1.4 var(--brand); }
+.town-budget-form { max-width: 280px; text-align: left; padding: 10px 0; }
+.town-budget-form input { width: 80px; padding: 6px; margin-left: 6px; }
+.town-budget-form p { font: 11px/1.4 var(--brand); }
+.town-budget-form button + button { margin-left: 6px; }
+@media (max-width: 600px) { .browser-colony > header { flex-wrap: wrap; } .browser-colony > header .town-budget { margin-left: 0; } }

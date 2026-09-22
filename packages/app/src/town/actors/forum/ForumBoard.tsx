@@ -1,3 +1,4 @@
+import { ArrowLeft as PanelBack } from "lucide-react"
 import { ReviewPanel, type ReviewMission } from "./missions/ReviewPanel"
 import { ArrowUp, ArrowDown, MessageCircle, Plus, X, Maximize2, Minimize2 } from "lucide-react"
 import Markdown from "react-markdown"
@@ -44,7 +45,6 @@ export function ForumBoard({
   const [body, setBody] = useState("")
   const [error, setError] = useState<string>()
   const [sending, setSending] = useState(false)
-  const [filter, setFilter] = useState<"all" | "missions">("all")
   const root = messages.find((message) => message.id === thread)
   const missionById = new Map(missions.map(mission => [mission.id, mission]))
   const author = (id: string) =>
@@ -203,7 +203,7 @@ export function ForumBoard({
         messages.findLast((message) => message.threadId === id)?.sequence ?? 0
       return latest(b.id) - latest(a.id)
     })
-  const visibleThreads = filter === "missions" ? threads.filter(message => missionById.has(message.id)) : threads
+  const visibleThreads = threads
   return (
     <aside className="browser-board" data-expanded={expanded} aria-label="Forum">
       <div className="browser-board-heading">
@@ -219,7 +219,7 @@ export function ForumBoard({
               setError(undefined)
             }}
           >
-            ←
+            <PanelBack size={18} strokeWidth={1.75} aria-hidden="true" />
           </button>
         )}
         <h2>Forum</h2>
@@ -244,7 +244,7 @@ export function ForumBoard({
       </div>
       <div className="forum-navigation">
         {!thread && !creating ? (
-          <><span>{visibleThreads.length} threads</span><div className="forum-filters" role="group" aria-label="Filter forum threads"><button type="button" aria-pressed={filter === "all"} onClick={() => setFilter("all")}>All</button><button type="button" aria-pressed={filter === "missions"} onClick={() => setFilter("missions")}>Missions</button></div></>
+          <span>{visibleThreads.length} {visibleThreads.length === 1 ? "thread" : "threads"}</span>
         ) : (
           <span />
         )}
@@ -288,8 +288,6 @@ export function ForumBoard({
             {submissionLink(missionById.get(message.id))}
             </div>
           ))
-        ) : filter === "missions" ? (
-          <p className="forum-hint">No missions yet.</p>
         ) : (
           <p className="forum-hint">
             The residents are reading their mission. Start a thread, or wait for

@@ -41,6 +41,7 @@ export function serverConnection(access: ColonyAccess) {
     readArtifact: (filePath: string, revision?: number) => request<{ artifact: ArtifactDocument; history: Artifact[] }>(`${path}/artifact?path=${encodeURIComponent(filePath)}${revision === undefined ? "" : `&revision=${revision}`}`, { headers }),
     readLibrary: (id: string) => request<LibraryDocument>(`${path}/library?id=${encodeURIComponent(id)}`, { headers }),
     snapshot: () => request<ColonySnapshot>(path, { headers }),
+    addBudget: (amountUsd: number, operationId: string) => request<ColonySnapshot>(`${path}/budget`, { method: "POST", headers, body: JSON.stringify({ amountUsd, operationId }) }),
     pause: () =>
       request<ColonySnapshot>(`${path}/pause`, { method: "POST", headers }),
     resume: () =>

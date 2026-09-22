@@ -4,8 +4,6 @@ import { TownSetup } from "./TownSetup"
 import { Town } from "./Town"
 import {
   DEFAULT_MAX_AGENTS,
-  DEFAULT_AGENT_COUNT,
-  DEFAULT_MESSAGES_PER_AGENT,
   type WorldConfig
 } from "./world"
 import { DEFAULT_FORUM_CONCURRENCY } from "./actors/forum/session"
@@ -39,9 +37,7 @@ export function TownApp() {
   const [starting, setStarting] = useState(false)
   const [parallel, setParallel] = useState(DEFAULT_FORUM_CONCURRENCY)
   const [tools, setTools] = useState(DEFAULT_FORUM_TOOL_LIMIT)
-  const [turns, setTurns] = useState(
-    DEFAULT_AGENT_COUNT * DEFAULT_MESSAGES_PER_AGENT
-  )
+  const [budgetUsd, setBudgetUsd] = useState(1)
   const [timeout, setTimeoutSeconds] = useState(
     DEFAULT_SERVER_TURN_TIMEOUT_MS / 1000
   )
@@ -75,7 +71,8 @@ export function TownApp() {
         config: { ...config, timeoutMs: timeout * 1000 },
         maxConcurrent: parallel,
         maxToolCalls: tools,
-        maxTurns: turns
+        maxTurns: info.maxTurns,
+        budgetUsd
       })
       sessionStorage.setItem(accessKey(result.id), result.token)
       sessionStorage.setItem("terrarium-server:last", result.id)
@@ -112,7 +109,6 @@ export function TownApp() {
         maxAgents={info?.maxAgents ?? DEFAULT_MAX_AGENTS}
         onCreate={(value) => {
           setConfig(value)
-          setTurns(value.count * value.messagesPerAgent)
         }}
       />
       {config && (
@@ -149,13 +145,14 @@ export function TownApp() {
                 />
               </label>
               <label>
-                Turn budget
+                Model budget (USD)
                 <input
                   type="number"
-                  min={config.count}
-                  max={info?.maxTurns}
-                  value={turns}
-                  onChange={(event) => setTurns(Number(event.target.value))}
+                  min={0.01}
+                  max={100}
+                  step={0.01}
+                  value={budgetUsd}
+                  onChange={(event) => setBudgetUsd(Number(event.target.value))}
                   required
                 />
               </label>
@@ -264,6 +261,7 @@ function ServerColony({
               snapshot.state.running ? connection.pause() : connection.resume()
             ).then(receiveSnapshot, (cause) => setError(String(cause)))
           }}
+          onAddBudget={async (amount, operationId) => { receiveSnapshot(await connection.addBudget(amount, operationId)) }}
           onLeave={onLeave}
           model={snapshot.model}
           maxConcurrent={snapshot.maxConcurrent}

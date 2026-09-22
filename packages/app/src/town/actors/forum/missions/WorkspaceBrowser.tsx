@@ -1,3 +1,4 @@
+import { ArrowLeft as PanelBack, X as PanelClose } from "lucide-react"
 import { useEffect, useState } from "react"
 import Markdown from "react-markdown"
 import remarkGfm from "remark-gfm"
@@ -54,9 +55,9 @@ export function WorkspaceBrowser({ missions, residents, reader, artifacts, readA
   }, [missionId, path, reader, version, published])
   if (published) return <ArtifactBrowser files={artifacts} residents={residents} read={readArtifact} onClose={onClose} onBack={() => setPublished(false)} initialPath={target.path} initialRevision={target.revision} />
   return <aside className="artifact-browser workspace-browser mission-workspace" aria-label="Mission workspace">
-    <header><h2>Workspace</h2><button type="button" onClick={onClose} aria-label="Close workspace">×</button></header>
+    <header><h2>Workspace</h2><button className="panel-icon-button" type="button" onClick={onClose} aria-label="Close workspace"><PanelClose size={18} strokeWidth={1.75} aria-hidden="true" /></button></header>
     <nav>
-      {missionId && <button type="button" onClick={() => { if (path) setPath(undefined); else setMissionId(undefined) }}>← Back</button>}
+      {missionId && <button className="panel-icon-button" aria-label={path ? "Back to mission files" : "Back to missions"} type="button" onClick={() => { if (path) setPath(undefined); else setMissionId(undefined) }}><PanelBack size={18} strokeWidth={1.75} aria-hidden="true" /></button>}
       <span title={path ?? mission?.description}>{path ?? mission?.description ?? "Mission files"}</span>
       <button type="button" className="workspace-published" onClick={() => { setTarget({ path: undefined, revision: undefined }); setPublished(true) }}>Published · {artifacts.length}</button>
     </nav>

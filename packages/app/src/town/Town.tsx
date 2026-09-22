@@ -1,3 +1,4 @@
+import { SpendBudget } from "./SpendBudget"
 import { WorkspaceBrowser, type WorkspaceReader } from "./actors/forum/missions/WorkspaceBrowser"
 import type { ReviewMission } from "./actors/forum/missions/ReviewPanel"
 import { LibraryBrowser, type ReadLibrary } from "./actors/library/LibraryBrowser"
@@ -33,6 +34,7 @@ export function Town({
   onSubmit,
   onToggle,
   onLeave,
+  onAddBudget,
   model,
   maxConcurrent,
   error,
@@ -57,6 +59,7 @@ export function Town({
     operationId: string
   ) => Promise<ForumResult>
   onToggle: () => void
+  onAddBudget?: ((amount: number, operationId: string) => Promise<void>) | undefined
   onLeave: () => void
   model: string
   maxConcurrent: number
@@ -88,6 +91,7 @@ export function Town({
           <h1>{config.name}</h1>
           <p>{config.premise}</p>
         </div>
+        <SpendBudget spend={state.spend} onAdd={onAddBudget} />
         <button type="button" onClick={onToggle}>
           {state.running ? "Pause" : "Continue"}
         </button>
@@ -163,7 +167,7 @@ export function Town({
       <footer>
         {footerActions}
         <span>
-          {state.turns} / {state.limit} turns · {maxConcurrent} parallel ·{" "}
+          {maxConcurrent} parallel ·{" "}
           {model}
         </span>
         <a
