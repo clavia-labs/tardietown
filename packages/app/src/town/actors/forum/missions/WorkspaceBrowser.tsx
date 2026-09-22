@@ -63,13 +63,10 @@ export function WorkspaceBrowser({ missions, residents, reader, artifacts, readA
       <button type="button" className="workspace-published" onClick={() => { setTarget({ path: undefined, revision: undefined }); setPublished(true) }}>Published · {artifacts.length}</button>
     </nav>
     {mission && <p className="artifact-meta">{mission.owner ? `${residents.find(resident => resident.id === mission.owner)?.name ?? mission.owner}${mission.status === "completed" ? " · Read only" : " · Shared workspace"}` : "Unclaimed"}</p>}
-    {mission?.artifactPath && <button type="button" className="workspace-submission" onClick={() => { setTarget({ path: mission.artifactPath, revision: mission.artifactRevision }); setPublished(true) }}>
-      Submitted · {mission.artifactPath.split("/").at(-1)} · v{mission.artifactRevision}
-    </button>}
     {error ? <p role="alert">{error}</p> : loading ? <p role="status">Opening workspace…</p> : document ? <div className="artifact-document">
       {document.path.endsWith(".md") ? <Markdown remarkPlugins={[remarkGfm]} skipHtml components={{ img: ({ alt }) => <span>{alt}</span>, a: ({ href, children }) => <a href={href?.startsWith("https://") || href?.startsWith("http://") ? href : undefined} target="_blank" rel="noopener noreferrer">{children}</a> }}>{document.content}</Markdown> : <pre>{document.content}</pre>}
     </div> : <div className="artifact-files mission-files">
-      {!missionId ? missions.map(entry => <button key={entry.id} type="button" onClick={() => { setMissionId(entry.id); setPath(undefined) }}><span>{entry.description}</span><small>{entry.status.replace("_", " ")}</small></button>) : files.length ? <FileTree key={missionId} files={files} submittedPath={mission?.reviewFilePath} onOpen={setPath} /> : <p>No working files recorded.</p>}
+      {!missionId ? missions.map(entry => <button key={entry.id} type="button" onClick={() => { setMissionId(entry.id); setPath(undefined) }}><span>{entry.description}</span><small>{entry.status.replace("_", " ")}</small></button>) : files.length || mission?.artifactPath ? <FileTree key={missionId} files={files} submittedPath={mission?.reviewFilePath} onOpen={setPath} published={mission?.artifactPath ? { path: mission.artifactPath, revision: mission.artifactRevision, onOpen: () => { setTarget({ path: mission.artifactPath, revision: mission.artifactRevision }); setPublished(true) } } : undefined} /> : <p>No working files recorded.</p>}
     </div>}
   </aside>
 }
