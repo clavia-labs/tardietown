@@ -68,7 +68,7 @@ export function Town({
   const toggleLibrary = useCallback(() => { setLibraryOpen(open => !open); setWorkspaceOpen(false); setBoardOpen(false) }, [])
   const toggleWorkspace = useCallback(() => { setArtifactTarget(undefined); setWorkspaceOpen(open => !open); setLibraryOpen(false); setBoardOpen(false) }, [])
   const openMissionArtifact = useCallback((path: string, revision?: number) => { setArtifactTarget({ path, revision }); setLibraryOpen(false); setBoardOpen(false); setWorkspaceOpen(true) }, [])
-  const [boardOpen, setBoardOpen] = useState(false)
+  const [boardOpen, setBoardOpen] = useState(true)
   const openBoard = useCallback(() => { setBoardOpen(open => !open); setLibraryOpen(false); setWorkspaceOpen(false) }, [])
   const latest = messages.findLast((message) => message.author !== "user")
   return (
