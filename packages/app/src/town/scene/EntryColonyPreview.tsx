@@ -63,7 +63,7 @@ export function EntryColonyPreview({
   const selected = residents.find((resident) => resident.id === selectedResident)
   const [workspaceOpen, setWorkspaceOpen] = useState(false)
   const [libraryOpen, setLibraryOpen] = useState(false)
-  const toggleLibrary = useCallback(() => { setLibraryOpen(open => !open); setWorkspaceOpen(false); setBoardOpen(false) }, [])
+  const toggleLibrary = useCallback(() => { setLibraryOpen(open => !open); setWorkspaceOpen(false) }, [])
   const toggleWorkspace = useCallback(() => { setWorkspaceOpen(open => !open); setLibraryOpen(false) }, [])
   const [boardOpen, setBoardOpen] = useState(true)
   const [boardExpanded, setBoardExpanded] = useState(false)
@@ -169,7 +169,7 @@ export function EntryColonyPreview({
         {selected && <ResidentProfile key={selected.id} resident={selected} karma={0} messages={posts.map((post, index) => ({ ...post, body: post.text, sequence: index + 1 }))} onClose={closeProfile} />}
       {libraryOpen && <LibraryBrowser entries={[]} residents={residents} onClose={toggleLibrary} />}
       {workspaceOpen && <ArtifactBrowser files={[]} residents={residents} onClose={toggleWorkspace} />}
-      {boardOpen && !libraryOpen && <aside className="entry-mini-board" data-expanded={boardExpanded} aria-label="Preview forum">
+      {boardOpen && <aside className="entry-mini-board" data-expanded={boardExpanded} aria-label="Preview forum">
         <header>
           {root && (
             <button

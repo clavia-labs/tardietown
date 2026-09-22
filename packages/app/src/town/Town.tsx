@@ -74,7 +74,7 @@ export function Town({
   footerActions?: ReactNode
 }) {
   const [packagesOpen, setPackagesOpen] = useState(false)
-  const togglePackages = useCallback(() => setPackagesOpen(value => !value), [])
+  const togglePackages = useCallback(() => { setPackagesOpen(value => !value); setWorkspaceOpen(false); setLibraryOpen(false); setSelectedResident(undefined) }, [])
   const [selectedResident, setSelectedResident] = useState<string>()
   const toggleResident = useCallback((id: string) => setSelectedResident((selected) => selected === id ? undefined : id), [])
   const closeProfile = useCallback(() => setSelectedResident(undefined), [])
@@ -83,10 +83,10 @@ export function Town({
   const [artifactTarget, setArtifactTarget] = useState<{ path: string; revision: number | undefined }>()
   const [libraryOpen, setLibraryOpen] = useState(false)
   const closeLibrary = useCallback(() => setLibraryOpen(false), [])
-  const toggleLibrary = useCallback(() => { setLibraryOpen(open => !open); setWorkspaceOpen(false); setBoardOpen(false) }, [])
-  const toggleWorkspace = useCallback(() => { setArtifactTarget(undefined); setWorkspaceOpen(open => !open); setLibraryOpen(false) }, [])
+  const toggleLibrary = useCallback(() => { setLibraryOpen(open => !open); setWorkspaceOpen(false); setPackagesOpen(false) }, [])
+  const toggleWorkspace = useCallback(() => { setArtifactTarget(undefined); setWorkspaceOpen(open => !open); setLibraryOpen(false); setPackagesOpen(false) }, [])
   const closeWorkspace = useCallback(() => { setWorkspaceOpen(false); setArtifactTarget(undefined) }, [])
-  const openMissionArtifact = useCallback((path: string, revision?: number) => { setArtifactTarget({ path, revision }); setSelectedResident(undefined); setLibraryOpen(false); setBoardOpen(true); setWorkspaceOpen(true) }, [])
+  const openMissionArtifact = useCallback((path: string, revision?: number) => { setArtifactTarget({ path, revision }); setSelectedResident(undefined); setLibraryOpen(false); setPackagesOpen(false); setBoardOpen(true); setWorkspaceOpen(true) }, [])
   const [boardOpen, setBoardOpen] = useState(true)
   const openBoard = useCallback(() => { setBoardOpen(open => !open); setLibraryOpen(false) }, [])
   const latest = messages.findLast((message) => message.author !== "user")
@@ -105,7 +105,7 @@ export function Town({
           {state.running ? "Pause" : "Continue"}
         </button>
       </header>
-      <div className="browser-colony-content" data-board-open={boardOpen} data-workspace-open={workspaceOpen}>
+      <div className="browser-colony-content" data-board-open={boardOpen} data-workspace-open={workspaceOpen || libraryOpen || packagesOpen}>
         <section className="browser-town">
           <ColonyPreview
             onResident={toggleResident}
@@ -162,7 +162,7 @@ export function Town({
         {selected && <ResidentProfile key={selected.id} resident={selected} karma={karma[selected.id] ?? 0} messages={messages} onClose={closeProfile} />}
         {libraryOpen && <LibraryBrowser entries={library} read={readLibrary} residents={residents} onClose={closeLibrary} />}
         {workspaceOpen && <WorkspaceBrowser missions={missions} reader={workspaceReader} artifacts={artifacts} readArtifact={readArtifact} residents={residents} onClose={closeWorkspace} initialPath={artifactTarget?.path} initialRevision={artifactTarget?.revision} />}
-        {boardOpen && !libraryOpen && (
+        {boardOpen && (
           <ForumBoard
             policy={policy}
             onSubmit={onSubmit}

@@ -361,24 +361,24 @@
 .entry-mini-board .forum-close { margin-left: 0; }
 .browser-board { box-sizing: border-box; }
 
-.browser-colony-content[data-workspace-open="true"] > .workspace-browser { left: 0; right: auto; }
+.browser-colony-content[data-workspace-open="true"] > .artifact-browser { left: 0; right: auto; }
 @media (min-width: 761px) {
-  .browser-colony-content[data-workspace-open="true"][data-board-open="true"] > .workspace-browser { width: min(720px, calc(100% - 376px)); }
+  .browser-colony-content[data-workspace-open="true"][data-board-open="true"] > .artifact-browser { width: min(720px, calc(100% - 376px)); }
 }
 @media (max-width: 760px) {
-  .browser-colony-content[data-workspace-open="true"][data-board-open="true"] > .workspace-browser { width: 100%; }
+  .browser-colony-content[data-workspace-open="true"][data-board-open="true"] > .artifact-browser { width: 100%; }
 }
 
 .browser-board[data-expanded="true"] { width: min(960px, 100%); }
 .entry-mini-board[data-expanded="true"] { width: min(960px, calc(100% - 20px)); }
 @media (min-width: 761px) {
-  .browser-colony-content[data-workspace-open="true"][data-board-open="true"]:has(> .browser-board[data-expanded="true"]) > .workspace-browser { width: calc(35% - 8px); }
+  .browser-colony-content[data-workspace-open="true"][data-board-open="true"]:has(> .browser-board[data-expanded="true"]) > .artifact-browser { width: calc(35% - 8px); }
   .browser-colony-content[data-workspace-open="true"][data-board-open="true"] > .browser-board[data-expanded="true"] { width: calc(65% - 8px); }
 }
 
-.entry-land > .workspace-browser { left: 0; right: auto; }
+.entry-land > .artifact-browser { left: 0; right: auto; }
 @media (min-width: 761px) {
-  .entry-land:has(> .entry-mini-board) > .workspace-browser { width: min(520px, calc(100% - 352px)); }
+  .entry-land:has(> .entry-mini-board) > .artifact-browser { width: min(520px, calc(100% - 352px)); }
 }
 
 /* Consistent panel controls and compact content rhythm. */
@@ -511,3 +511,5 @@
 .package-entry input[type="password"] { width: 100%; box-sizing: border-box; border: 1px solid #c7cbbf; border-radius: 5px; padding: 8px; background: transparent; }
 .package-entry form button + button { margin-left: 6px; }
 .town-places > button { display: inline-flex; align-items: center; gap: 5px; }
+
+.browser-colony-content > .artifact-browser, .entry-land > .artifact-browser { left: 0; right: auto; }
