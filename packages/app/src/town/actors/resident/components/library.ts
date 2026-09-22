@@ -1,3 +1,4 @@
+import { toolSchema as schema } from "./toolSchema"
 import { Context, Effect, Layer } from "effect"
 import { tool } from "tardie/agent"
 import type { LibraryActorDispatcher } from "../../library/actor"
@@ -9,7 +10,6 @@ export const libraryLayer = (dispatcher: LibraryActorDispatcher, author: string)
 
 const text = { type: "string", minLength: 1 } as const
 const positiveInteger = { type: "integer", minimum: 1 } as const
-const schema = (properties: Record<string, unknown>, required: readonly string[]) => ({ type: "object", properties, required, additionalProperties: false })
 
 export const library = () => tool([
   {

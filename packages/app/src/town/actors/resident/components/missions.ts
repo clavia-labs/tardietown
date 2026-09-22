@@ -1,3 +1,4 @@
+import { toolSchema as schema } from "./toolSchema"
 import { Context, Effect, Layer } from "effect"
 import { tool } from "tardie/agent"
 import { MissionStore, type MissionCommand, type MissionResult } from "../../forum/missions/store"
@@ -5,7 +6,6 @@ import { MissionStore, type MissionCommand, type MissionResult } from "../../for
 export type ExecuteMission = (command: MissionCommand, operationId: string) => Effect.Effect<MissionResult>
 export class SharedMissions extends Context.Service<SharedMissions, { store: MissionStore; execute: ExecuteMission }>()("town/SharedMissions") {}
 export const missionLayer = (store: MissionStore, execute: ExecuteMission) => Layer.succeed(SharedMissions, { store, execute })
-const schema = (properties: Record<string, unknown>, required: string[]) => ({ type: "object", properties, required, additionalProperties: false })
 const text = { type: "string", minLength: 1 }
 const missionId = { type: "string", minLength: 1 }
 

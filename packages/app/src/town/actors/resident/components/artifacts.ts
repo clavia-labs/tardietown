@@ -1,9 +1,9 @@
+import { toolSchema as schema } from "./toolSchema"
 import { Context, Effect, Layer } from "effect"
 import { tool } from "tardie/agent"
 import type { ArtifactActorDispatcher } from "../../artifacts/actor"
 export class SharedArtifacts extends Context.Service<SharedArtifacts, { dispatcher: ArtifactActorDispatcher; author: string }>()("town/SharedArtifacts") {}
 export const artifactLayer = (dispatcher: ArtifactActorDispatcher, author: string) => Layer.succeed(SharedArtifacts, { dispatcher, author })
-const schema = (properties: Record<string, unknown>, required: string[]) => ({ type: "object", properties, required, additionalProperties: false })
 const text = { type: "string", minLength: 1 }
 export const artifacts = () => tool([
   { spec: { name: "list_artifacts", description: "List the town's shared Markdown artifacts and current revisions. Use a common file for the final deliverable rather than making duplicate final documents.", inputSchema: schema({}, []) }, run: (_: unknown, context: { callId: string; turn?: string }) => Effect.flatMap(SharedArtifacts, ({dispatcher, author}) => { const operationId = JSON.stringify([context.turn, context.callId]); return dispatcher.request({ kind: "list", author, operationId }, operationId) }) },

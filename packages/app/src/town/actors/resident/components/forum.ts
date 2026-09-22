@@ -1,3 +1,4 @@
+import { toolSchema as object } from "./toolSchema"
 import { Context, Effect, Layer } from "effect"
 import { tool } from "tardie/agent"
 import type { Mission } from "../../forum/missions/store"
@@ -89,16 +90,6 @@ export class Forum extends Context.Service<Forum, ForumService>()(
 export const forumLayer = (service: ForumService) => Layer.succeed(Forum, service)
 
 const string = { type: "string", minLength: 1 } as const
-const object = (
-  properties: Record<string, unknown>,
-  required: readonly string[] = []
-) => ({
-  type: "object",
-  properties,
-  required,
-  additionalProperties: false
-})
-
 // forum exposes public threads and private acknowledgments through an author-bound Forum service.
 export const forum = () =>
   tool(
