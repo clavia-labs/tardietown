@@ -311,7 +311,7 @@
 .resident-activity-tabs { display: flex; gap: 16px; border-bottom: 1px solid #e3e5db; }
 .resident-profile .resident-activity-tabs button { padding: 8px 0; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: #77816f; font: 12px/1.5 var(--brand); }
 .resident-profile .resident-activity-tabs button[aria-pressed="true"] { color: #384332; border-bottom-color: #8b571e; }
-.resident-activity { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; padding-right: 6px; }
+.resident-activity { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-gutter: stable; margin-right: -14px; margin-bottom: -14px; padding-right: 14px; padding-bottom: 14px; scrollbar-width: thin; scrollbar-color: #adb3a5 transparent; }
 .resident-activity article { padding: 10px 0; border-bottom: 1px solid #e3e5db; }
 .resident-activity article:last-child { border-bottom: 0; }
 .resident-activity article header { margin: 0 0 6px; font: 10px/1.4 var(--brand); }
