@@ -373,3 +373,10 @@
 @media (max-width: 760px) {
   .browser-colony-content[data-workspace-open="true"][data-board-open="true"] > .workspace-browser { width: 100%; }
 }
+
+.browser-board[data-expanded="true"] { width: min(960px, 100%); }
+.entry-mini-board[data-expanded="true"] { width: min(960px, calc(100% - 20px)); }
+@media (min-width: 761px) {
+  .browser-colony-content[data-workspace-open="true"][data-board-open="true"]:has(> .browser-board[data-expanded="true"]) > .workspace-browser { width: calc(35% - 8px); }
+  .browser-colony-content[data-workspace-open="true"][data-board-open="true"] > .browser-board[data-expanded="true"] { width: calc(65% - 8px); }
+}
