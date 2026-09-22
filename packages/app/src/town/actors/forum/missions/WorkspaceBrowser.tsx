@@ -53,7 +53,7 @@ export function WorkspaceBrowser({ missions, residents, reader, artifacts, readA
     return () => { cancelled = true }
   }, [missionId, path, reader, version, published])
   if (published) return <ArtifactBrowser files={artifacts} residents={residents} read={readArtifact} onClose={onClose} onBack={() => setPublished(false)} initialPath={target.path} initialRevision={target.revision} />
-  return <aside className="artifact-browser workspace-browser" aria-label="Mission workspace">
+  return <aside className="artifact-browser workspace-browser mission-workspace" aria-label="Mission workspace">
     <header><h2>Workspace</h2><button type="button" onClick={onClose} aria-label="Close workspace">×</button></header>
     <nav>
       {missionId && <button type="button" onClick={() => { if (path) setPath(undefined); else setMissionId(undefined) }}>← Back</button>}
@@ -66,7 +66,7 @@ export function WorkspaceBrowser({ missions, residents, reader, artifacts, readA
     </button>}
     {error ? <p role="alert">{error}</p> : loading ? <p role="status">Opening workspace…</p> : document ? <div className="artifact-document">
       {document.path.endsWith(".md") ? <Markdown remarkPlugins={[remarkGfm]} skipHtml components={{ img: ({ alt }) => <span>{alt}</span>, a: ({ href, children }) => <a href={href?.startsWith("https://") || href?.startsWith("http://") ? href : undefined} target="_blank" rel="noopener noreferrer">{children}</a> }}>{document.content}</Markdown> : <pre>{document.content}</pre>}
-    </div> : <div className="artifact-files">
+    </div> : <div className="artifact-files mission-files">
       {!missionId ? missions.map(entry => <button key={entry.id} type="button" onClick={() => { setMissionId(entry.id); setPath(undefined) }}><span>{entry.description}</span><small>{entry.status.replace("_", " ")}</small></button>) : files.length ? files.map(file => <button key={file.path} type="button" onClick={() => setPath(file.path)}><span>{file.path}</span><small>v{file.revision}</small></button>) : <p>No working files recorded.</p>}
     </div>}
   </aside>
