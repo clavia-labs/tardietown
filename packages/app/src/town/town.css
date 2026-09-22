@@ -364,3 +364,12 @@
 .entry-mini-board .forum-close { margin-left: 0; }
 .browser-board[data-expanded="true"] { box-sizing: border-box; width: min(640px, 100%); }
 .entry-mini-board[data-expanded="true"] { width: min(640px, calc(100% - 20px)); }
+
+.browser-colony-content[data-workspace-open="true"] > .workspace-browser { left: 0; right: auto; }
+@media (min-width: 761px) {
+  .browser-colony-content[data-workspace-open="true"][data-board-open="true"] > .workspace-browser { width: calc(55% - 8px); }
+  .browser-colony-content[data-workspace-open="true"][data-board-open="true"] > .browser-board { box-sizing: border-box; width: calc(45% - 8px); }
+}
+@media (max-width: 760px) {
+  .browser-colony-content[data-workspace-open="true"][data-board-open="true"] > .workspace-browser { width: 100%; }
+}
