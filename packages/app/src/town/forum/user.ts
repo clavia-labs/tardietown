@@ -1,5 +1,5 @@
 import { Effect } from "effect"
-import type { ForumCommand } from "./component"
+import type { ForumCommand } from "../agent/components/forum"
 import { MemoryForum } from "./store"
 
 export type UserForumCommand = Extract<

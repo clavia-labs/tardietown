@@ -1,5 +1,5 @@
 import type { Artifact } from "./workspace/artifacts/store"
-import type { ForumMessage, ForumPolicy } from "./forum/component"
+import type { ForumMessage, ForumPolicy } from "./agent/components/forum"
 import type { ForumSessionState } from "./forum/session"
 import type { shuffleDuckPalettes } from "./scene/duckPalettes"
 import type { Resident, WorldConfig } from "./world"

@@ -1,6 +1,6 @@
 import { Context, Effect, Layer } from "effect"
 import { tool } from "tardie/agent"
-import { MissionStore, type MissionCommand } from "./store"
+import { MissionStore, type MissionCommand } from "../../workspace/missions/store"
 
 export class SharedMissions extends Context.Service<SharedMissions, { store: MissionStore; author: string }>()("town/SharedMissions") {}
 export const missionLayer = (store: MissionStore, author: string) => Layer.succeed(SharedMissions, { store, author })

@@ -1,6 +1,6 @@
 import { Effect } from "effect"
 import type { ArtifactStore } from "../artifacts/store"
-import type { ForumCommand, ForumMessage, ForumResult } from "../../forum/component"
+import type { ForumCommand, ForumMessage, ForumResult } from "../../agent/components/forum"
 import type { MemoryForum } from "../../forum/store"
 
 export interface MissionRequest { residentId: string; reason: string; at: number }

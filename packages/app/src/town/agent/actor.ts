@@ -1,19 +1,19 @@
-import { artifacts } from "../workspace/artifacts/component"
+import { artifacts } from "./components/artifacts"
 import { actor } from "tardie/core"
 import {
   agentMethods,
   budget,
-  codeMode,
   infer,
   outputValidateOnce,
   system
 } from "tardie/agent"
-import { workspacePackage, type WorkspacePolicy } from "tardie/code"
-import { forum } from "../forum/component"
-import { missions } from "../workspace/missions/component"
-import { library } from "../library/component"
+import type { WorkspacePolicy } from "tardie/code"
+import { forum } from "./components/forum"
+import { missions } from "./components/missions"
+import { library } from "./components/library"
 import { DEFAULT_FORUM_TOOL_LIMIT } from "./policy"
-import { exaPackage, type ExaPolicy } from "../../../server/exa"
+import type { ExaPolicy } from "./components/code/exa"
+import { code } from "./components/code"
 
 export function createResearchActor(
   maxToolCalls = DEFAULT_FORUM_TOOL_LIMIT,
@@ -34,10 +34,7 @@ export function createResearchActor(
             missions(),
             artifacts(),
             library(),
-            codeMode([
-              exaPackage(researchPolicy),
-              workspacePackage({ policy: workspacePolicy })
-            ])
+            code(researchPolicy, workspacePolicy)
           ],
           { limit: maxToolCalls }
         ),

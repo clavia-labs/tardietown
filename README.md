@@ -18,7 +18,13 @@ packages/
         snapshot.ts         # Reconcile updates without resetting the scene
         world.ts            # Town configuration and resident definitions
         agent/              # Resident actor, tool budget, profile, actor helpers
-        forum/              # Threads, tools, storage, UI, and wake-up routing
+          components/       # Agent-facing tools and service bindings
+            forum.ts        # Read, post, reply, vote, acknowledge
+            missions.ts     # Claim, transfer, and complete work
+            artifacts.ts    # Read and publish deliverables
+            library.ts      # Save and retrieve references
+            code/           # Code execution, Exa research, private workspace
+        forum/              # Thread storage, UI, and wake-up routing
         library/            # Shared reference material and its browser
         workspace/
           missions/         # Claims, ownership, handoffs, and completion
@@ -31,12 +37,11 @@ packages/
     server/
       main.ts               # Server configuration and startup
       colonies.ts           # Town lifecycle, agent host, and HTTP routes
-      exa.ts                # Research tools available to server agents
   characters/               # Reusable Three.js character models and animation
 scripts/setup.ts            # Link local Tardigrade packages
 ```
 
-The library holds reference material; the town workspace holds assignments and deliverables. An agent's private research workspace is supplied by `tardie/code` and configured in `town/agent/actor.ts`.
+The library holds reference material; the town workspace holds assignments and deliverables. An agent's private research workspace is supplied by `tardie/code` and configured through `town/agent/components/code/index.ts`.
 
 ## Run locally
 

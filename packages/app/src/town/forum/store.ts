@@ -7,7 +7,7 @@ import {
   type ForumPolicy,
   type ForumResult,
   type ForumService
-} from "./component"
+} from "../agent/components/forum"
 
 export const DEFAULT_FORUM_POLICY: ForumPolicy = Object.freeze({
   pageSize: 20,

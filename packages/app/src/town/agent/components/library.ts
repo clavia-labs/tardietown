@@ -1,7 +1,7 @@
 import { Context, Effect, Layer } from "effect"
 import { tool } from "tardie/agent"
-import type { LibraryActorDispatcher } from "./actor"
-import type { LibraryPolicy } from "./store"
+import type { LibraryActorDispatcher } from "../../library/actor"
+import type { LibraryPolicy } from "../../library/store"
 
 export class SharedLibrary extends Context.Service<SharedLibrary, { dispatcher: LibraryActorDispatcher; author: string }>()("town/SharedLibrary") {}
 

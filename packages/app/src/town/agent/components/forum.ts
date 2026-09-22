@@ -1,6 +1,6 @@
 import { Context, Effect } from "effect"
 import { tool } from "tardie/agent"
-import type { Mission } from "../workspace/missions/store"
+import type { Mission } from "../../workspace/missions/store"
 
 export interface ForumMessage {
   readonly id: string

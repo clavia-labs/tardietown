@@ -1,5 +1,5 @@
 import type { Resident } from "../world"
-import type { ForumMessage } from "./component"
+import type { ForumMessage } from "../agent/components/forum"
 import { MemoryForum } from "./store"
 import type { Mission, MissionStore } from "../workspace/missions/store"
 

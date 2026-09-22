@@ -4,7 +4,7 @@ import type {
   ServerColonyOptions,
   ColonyServerInfo
 } from "./protocol"
-import type { ForumResult } from "./forum/component"
+import type { ForumResult } from "./agent/components/forum"
 import type { UserForumCommand } from "./forum/user"
 import type { LibraryDocument } from "./library/store"
 
