@@ -42,7 +42,7 @@ export class MissionStore {
     if (!this.residents.size || this.residents.size !== residentIds.length || [...this.residents].some((id) => !id.trim())) throw Error("Resident IDs must be nonempty and unique.")
     const root = board.snapshot().find((message) => message.id === rootPostId && message.parentId === undefined)
     if (!root) throw Error("The root mission must be an existing forum thread.")
-    this.records.set(root.id, this.freeze({ id: root.id, description: root.body, status: "open", approvalsRequired: Math.min(2, Math.max(1, this.residents.size - 1)), humanReviewRequired: this.residents.size === 1, reviews: [], requests: [], history: [{ at: this.now(), actor: "runtime", action: "created" }] }))
+    this.records.set(root.id, this.freeze({ id: root.id, description: root.body, status: "open", approvalsRequired: Math.max(1, this.residents.size - 1), humanReviewRequired: this.residents.size === 1, reviews: [], requests: [], history: [{ at: this.now(), actor: "runtime", action: "created" }] }))
     board.registerMissionResolver((id) => this.records.get(id))
   }
 
@@ -81,7 +81,7 @@ export class MissionStore {
       if (parent.owner !== author) return this.fail("Only the current owner may create child missions.", parent)
       const posted = this.forum(author, { kind: "create_post", title: "Child mission", body: command.description.trim() }, `${operationId}:create`)
       if (!posted.ok || posted.kind !== "create_post") return this.fail(posted.ok ? "The forum did not create the child mission." : posted.message)
-      const mission = this.freeze({ id: posted.message.id, description: posted.message.body, parentMissionId: parent.id, status: "open", approvalsRequired: Math.min(2, Math.max(1, this.residents.size - 1)), humanReviewRequired: this.residents.size === 1, reviews: [], requests: [], history: [{ at, actor: author, action: "created" }] })
+      const mission = this.freeze({ id: posted.message.id, description: posted.message.body, parentMissionId: parent.id, status: "open", approvalsRequired: Math.max(1, this.residents.size - 1), humanReviewRequired: this.residents.size === 1, reviews: [], requests: [], history: [{ at, actor: author, action: "created" }] })
       this.records.set(mission.id, mission); this.changed(); return this.success(mission)
     }
     const mission = this.records.get(command.missionId)
