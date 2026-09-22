@@ -1,4 +1,4 @@
-import { LockKeyhole } from "lucide-react"
+import { LockKeyhole, MessagesSquare, FolderOpen, Library } from "lucide-react"
 import { PackagesPanel } from "./packages/PackagesPanel"
 import type { PackageUpdate, TownPackage } from "./packages/types"
 import { SpendBudget } from "./SpendBudget"
@@ -137,10 +137,10 @@ export function Town({
             className="browser-open-board"
             onClick={openBoard}
           >
-            Forum · {messages.length}
+            <MessagesSquare size={13} aria-hidden="true" /> Forum · {messages.length}
           </button>
-          <button type="button" className="workspace-open" onClick={toggleWorkspace}>Files · {artifacts.length}</button>
-          <button type="button" className="workspace-open" onClick={toggleLibrary}>Library · {library.length}</button>
+          <button type="button" className="workspace-open" onClick={toggleWorkspace}><FolderOpen size={13} aria-hidden="true" /> Files · {artifacts.length}</button>
+          <button type="button" className="workspace-open" onClick={toggleLibrary}><Library size={13} aria-hidden="true" /> Library · {library.length}</button>
           <button type="button" className="workspace-open" onClick={togglePackages}><LockKeyhole size={13} aria-hidden="true" /> Packages</button>
           </div>
           <p className="browser-town-status">

@@ -510,4 +510,4 @@
 .package-entry form label { display: grid; gap: 6px; font: 12px var(--brand); }
 .package-entry input[type="password"] { width: 100%; box-sizing: border-box; border: 1px solid #c7cbbf; border-radius: 5px; padding: 8px; background: transparent; }
 .package-entry form button + button { margin-left: 6px; }
-.town-places .workspace-open { display: inline-flex; align-items: center; gap: 5px; }
+.town-places > button { display: inline-flex; align-items: center; gap: 5px; }
