@@ -1,4 +1,4 @@
-import { Context, Effect } from "effect"
+import { Context, Effect, Layer } from "effect"
 import { tool } from "tardie/agent"
 import type { Mission } from "../../workspace/missions/store"
 
@@ -85,6 +85,8 @@ export interface ForumService {
 export class Forum extends Context.Service<Forum, ForumService>()(
   "terrarium/Forum"
 ) {}
+
+export const forumLayer = (service: ForumService) => Layer.succeed(Forum, service)
 
 const string = { type: "string", minLength: 1 } as const
 const object = (

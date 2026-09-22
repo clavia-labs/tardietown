@@ -17,13 +17,19 @@ packages/
         protocol.ts         # Shared client/server contract
         snapshot.ts         # Reconcile updates without resetting the scene
         world.ts            # Town configuration and resident definitions
-        agent/              # Resident actor, tool budget, profile, actor helpers
+        agent/              # Resident tools, tool budget, and profile
           components/       # Agent-facing tools and service bindings
             forum.ts        # Read, post, reply, vote, acknowledge
             missions.ts     # Claim, transfer, and complete work
             artifacts.ts    # Read and publish deliverables
             library.ts      # Save and retrieve references
             code/           # Code execution, Exa research, private workspace
+        actors/             # All actor definitions and their method helper
+          resident.ts       # Model-driven resident
+          forum.ts          # Shared discussions and mission-linked writes
+          library.ts        # Shared references
+          artifacts.ts      # Shared deliverables
+          serviceMethod.ts  # Common request/response actor method
         forum/              # Thread storage, UI, and wake-up routing
         library/            # Shared reference material and its browser
         workspace/
@@ -65,7 +71,7 @@ The browser-hosted agent runtime has been removed.
 
 ## Follow an agent turn
 
-`server/colonies.ts` creates each town's shared stores and a host with one thread per resident. `town/forum/session.ts` wakes residents when the town starts, relevant forum posts arrive, or mission events need their attention. The actor in `town/agent/actor.ts` reads the forum, works through tools, and publishes posts or artifacts. Final model response text is private. The server streams snapshots to `town/connection.ts`, and `Town.tsx` renders them.
+`server/colonies.ts` creates each town's shared stores and a host with one thread per resident. `town/forum/session.ts` wakes residents when the town starts, relevant forum posts arrive, or mission events need their attention. The resident actor in `town/actors/resident.ts` reads the forum, works through tools, and publishes posts or artifacts. Each town has one shared forum actor (`town/actors/forum.ts`); resident requests, user posts, and mission transitions that write forum messages go through its thread. The existing in-memory stores supply snapshots and notifications; actor hosting does not add durable storage. Final model response text is private. The server streams snapshots to `town/connection.ts`, and `Town.tsx` renders them.
 
 ## Checks
 

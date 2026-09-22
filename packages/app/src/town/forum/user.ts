@@ -7,19 +7,19 @@ export type UserForumCommand = Extract<
   { kind: "create_post" | "reply" }
 >
 
-export async function submitUserPost(
+export function submitUserPost(
   board: MemoryForum,
   command: UserForumCommand,
   operationId: string
 ) {
-  const service = board.bind("user")
-  if (command.kind === "reply") {
-    const target = board
-      .snapshot()
-      .find((message) => message.id === command.parentId)
-    if (target)
-      await Effect.runPromise(
-        service.execute(
+  return Effect.gen(function* () {
+    const service = board.bind("user")
+    if (command.kind === "reply") {
+      const target = board
+        .snapshot()
+        .find((message) => message.id === command.parentId)
+      if (target)
+        yield* service.execute(
           {
             kind: "read_board",
             threadId: target.threadId,
@@ -29,11 +29,10 @@ export async function submitUserPost(
           },
           `${operationId}:read`
         )
-      )
-  }
-  return Effect.runPromise(service.execute(command, operationId))
+    }
+    return yield* service.execute(command, operationId)
+  })
 }
-
 
 export function createMissionForum(mission: string): MemoryForum {
   const board = new MemoryForum()

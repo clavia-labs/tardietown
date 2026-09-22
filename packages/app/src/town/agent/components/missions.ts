@@ -1,23 +1,24 @@
 import { Context, Effect, Layer } from "effect"
 import { tool } from "tardie/agent"
-import { MissionStore, type MissionCommand } from "../../workspace/missions/store"
+import { MissionStore, type MissionCommand, type MissionResult } from "../../workspace/missions/store"
 
-export class SharedMissions extends Context.Service<SharedMissions, { store: MissionStore; author: string }>()("town/SharedMissions") {}
-export const missionLayer = (store: MissionStore, author: string) => Layer.succeed(SharedMissions, { store, author })
+export type ExecuteMission = (command: MissionCommand, operationId: string) => Effect.Effect<MissionResult>
+export class SharedMissions extends Context.Service<SharedMissions, { store: MissionStore; execute: ExecuteMission }>()("town/SharedMissions") {}
+export const missionLayer = (store: MissionStore, execute: ExecuteMission) => Layer.succeed(SharedMissions, { store, execute })
 const schema = (properties: Record<string, unknown>, required: string[]) => ({ type: "object", properties, required, additionalProperties: false })
 const text = { type: "string", minLength: 1 }
 const missionId = { type: "string", minLength: 1 }
 
 const commandTool = (name: MissionCommand["type"], description: string, properties: Record<string, unknown>, required: string[]) => ({
   spec: { name, description, inputSchema: schema(properties, required) },
-  run: (input: unknown, context: { callId: string; turn?: string }) => Effect.map(SharedMissions, ({ store, author }) => {
-    if (!input || typeof input !== "object" || Array.isArray(input)) return { ok: false, error: "Invalid mission arguments.", policy: store.policy }
+  run: (input: unknown, context: { callId: string; turn?: string }) => Effect.flatMap(SharedMissions, ({ store, execute }): Effect.Effect<MissionResult> => {
+    if (!input || typeof input !== "object" || Array.isArray(input)) return Effect.succeed({ ok: false, error: "Invalid mission arguments.", policy: store.policy })
     const value = input as Record<string, unknown>
     const allowed = Object.keys(properties)
-    if (Object.keys(value).some((key) => !allowed.includes(key))) return { ok: false, error: "Invalid mission arguments.", policy: store.policy }
+    if (Object.keys(value).some((key) => !allowed.includes(key))) return Effect.succeed({ ok: false, error: "Invalid mission arguments.", policy: store.policy })
     const normalized = Object.fromEntries(Object.entries(value).filter(([, item]) => item !== null))
-    if (required.some((key) => typeof normalized[key] !== "string" || !(normalized[key] as string).trim()) || Object.values(normalized).some((item) => typeof item !== "string")) return { ok: false, error: "Mission arguments must be nonempty strings.", policy: store.policy }
-    return store.execute(author, JSON.stringify([context.turn, context.callId]), { type: name, ...normalized } as MissionCommand)
+    if (required.some((key) => typeof normalized[key] !== "string" || !(normalized[key] as string).trim()) || Object.values(normalized).some((item) => typeof item !== "string")) return Effect.succeed({ ok: false, error: "Mission arguments must be nonempty strings.", policy: store.policy })
+    return execute({ type: name, ...normalized } as MissionCommand, JSON.stringify([context.turn, context.callId]))
   })
 })
 

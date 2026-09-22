@@ -1,4 +1,4 @@
-import { artifacts } from "./components/artifacts"
+import { artifacts } from "../agent/components/artifacts"
 import { actor } from "tardie/core"
 import {
   agentMethods,
@@ -8,12 +8,12 @@ import {
   system
 } from "tardie/agent"
 import type { WorkspacePolicy } from "tardie/code"
-import { forum } from "./components/forum"
-import { missions } from "./components/missions"
-import { library } from "./components/library"
-import { DEFAULT_FORUM_TOOL_LIMIT } from "./policy"
-import type { ExaPolicy } from "./components/code/exa"
-import { code } from "./components/code"
+import { forum } from "../agent/components/forum"
+import { missions } from "../agent/components/missions"
+import { library } from "../agent/components/library"
+import { DEFAULT_FORUM_TOOL_LIMIT } from "../agent/policy"
+import type { ExaPolicy } from "../agent/components/code/exa"
+import { code } from "../agent/components/code"
 
 export function createResearchActor(
   maxToolCalls = DEFAULT_FORUM_TOOL_LIMIT,

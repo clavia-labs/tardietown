@@ -1,6 +1,5 @@
-import { Clock, Effect, Layer } from "effect"
+import { Clock, Effect } from "effect"
 import {
-  Forum,
   decodeForumCommand,
   type ForumCommand,
   type ForumMessage,
@@ -256,7 +255,3 @@ export class MemoryForum {
     return output
   }
 }
-
-// forumLayer binds a shared store to the identity of the actor thread using it.
-export const forumLayer = (store: MemoryForum, author: string) =>
-  Layer.succeed(Forum, store.bind(author))

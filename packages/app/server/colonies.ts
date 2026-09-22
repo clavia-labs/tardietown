@@ -1,25 +1,27 @@
+import { createForumActor, forumStateLayer } from "../src/town/actors/forum"
+import type { UserForumCommand } from "../src/town/forum/user"
 import { mkdirSync, writeFileSync, renameSync } from "node:fs"
 import { join } from "node:path"
 import { ArtifactStore, type ArtifactPolicy } from "../src/town/workspace/artifacts/store"
 import { artifactLayer } from "../src/town/agent/components/artifacts"
-import { createArtifactActor, artifactWorkspaceLayer, type ArtifactActorDispatcher } from "../src/town/workspace/artifacts/actor"
+import { createArtifactActor, artifactWorkspaceLayer, type ArtifactActorDispatcher } from "../src/town/actors/artifacts"
 import { MissionStore, DEFAULT_MISSION_POLICY, type MissionPolicy } from "../src/town/workspace/missions/store"
 import { missionLayer } from "../src/town/agent/components/missions"
 import { LibraryStore, DEFAULT_LIBRARY_POLICY, type LibraryPolicy } from "../src/town/library/store"
-import { createLibraryActor, libraryCollectionLayer, type LibraryActorDispatcher } from "../src/town/library/actor"
+import { createLibraryActor, libraryCollectionLayer, type LibraryActorDispatcher } from "../src/town/actors/library"
 import { libraryLayer } from "../src/town/agent/components/library"
 import { Effect, Layer } from "effect"
 import { Infer } from "tardie/agent"
 import { createBunHost } from "tardie/bun"
-import { createResearchActor } from "../src/town/agent/actor"
+import { createResearchActor } from "../src/town/actors/resident"
 import { exaLayer, type ExaOptions } from "../src/town/agent/components/code/exa"
 import type { WorkspacePolicy } from "tardie/code"
-import { MemoryForum, forumLayer } from "../src/town/forum/store"
+import { MemoryForum } from "../src/town/forum/store"
 import { ForumSession } from "../src/town/forum/session"
 import { makeResidents, DEFAULT_MAX_AGENTS } from "../src/town/world"
 import { shuffleDuckPalettes } from "../src/town/scene/duckPalettes"
-import { createMissionForum, submitUserPost } from "../src/town/forum/user"
-import { decodeForumCommand } from "../src/town/agent/components/forum"
+import { createMissionForum } from "../src/town/forum/user"
+import { decodeForumCommand, forumLayer, type ForumService, type ForumResult } from "../src/town/agent/components/forum"
 import {
   DEFAULT_SERVER_MAX_COLONIES,
   DEFAULT_SERVER_MAX_TURNS,
@@ -89,6 +91,7 @@ export function createColonyService(options: ColonyServerOptions) {
     artifacts: ArtifactStore
     missions: MissionStore
     library: LibraryStore
+    post: (command: UserForumCommand, operationId: string) => Promise<ForumResult>
     readArtifact: (path: string, revision?: number) => Promise<unknown>
     readLibrary: (id: string) => Promise<unknown>
     closeMissionRuntime: () => void
@@ -156,6 +159,22 @@ export function createColonyService(options: ColonyServerOptions) {
         info.missionPolicy
       )
       const library = new LibraryStore(info.libraryPolicy)
+      const forumHost = await createBunHost({
+        actor: createForumActor(),
+        storage: ":memory:",
+        driver: { maxConcurrentThreads: 1 },
+        layersFor: () => forumStateLayer(board, missions)
+      })
+      provisionalHosts.push(forumHost)
+      const forumThread = await forumHost.allocateRootThread({ instance: id, name: "forum" })
+      const forumDispatcher = (author: string): ForumService => ({
+        execute: (command, operationId) => Effect.tryPromise((signal) =>
+          forumThread.request(
+            { author, operationId, command },
+            { key: JSON.stringify(["forum", author, operationId]), signal }
+          )
+        ).pipe(Effect.orDie)
+      })
       const artifactHost = await createBunHost({
         actor: createArtifactActor(),
         storage: ":memory:",
@@ -224,9 +243,14 @@ export function createColonyService(options: ColonyServerOptions) {
         layersFor: (thread) =>
           Layer.mergeAll(
             observed,
-            forumLayer(board, thread),
+            forumLayer(forumDispatcher(thread)),
             artifactLayer(artifactDispatcher, thread),
-            missionLayer(missions, thread),
+            missionLayer(missions, (command, operationId) => Effect.tryPromise((signal) =>
+              forumThread.mission(
+                { author: thread, operationId, command },
+                { key: JSON.stringify(["mission", thread, operationId]), signal }
+              )
+            ).pipe(Effect.orDie)),
             libraryLayer(libraryDispatcher(thread), thread),
             exaLayer(options.exa)
           )
@@ -266,7 +290,8 @@ export function createColonyService(options: ColonyServerOptions) {
               await Promise.allSettled([
                 host.close(),
                 artifactHost.close(),
-                libraryHost.close()
+                libraryHost.close(),
+                forumHost.close()
               ])
             }
           },
@@ -298,6 +323,10 @@ export function createColonyService(options: ColonyServerOptions) {
           artifacts,
           missions,
           library,
+          post: (command, operationId) => forumThread.post(
+            { command, operationId },
+            { key: JSON.stringify(["user-post", operationId]) }
+          ),
           readArtifact: async (path, revision) => {
             const operationId = crypto.randomUUID()
             const response = await Effect.runPromise(artifactDispatcher.request(
@@ -344,7 +373,7 @@ export function createColonyService(options: ColonyServerOptions) {
         current.resume()
         return { id, token, snapshot: record.snapshot() }
       } catch (error) {
-        await Promise.allSettled([host.close(), artifactHost.close(), libraryHost.close()])
+        await Promise.allSettled([host.close(), artifactHost.close(), libraryHost.close(), forumHost.close()])
         throw error
       }
     } finally {
@@ -479,7 +508,7 @@ export function createColonyService(options: ColonyServerOptions) {
         )
           return json({ error: "Invalid forum post" }, 400)
         return json(
-          await submitUserPost(record.board, command, input.operationId)
+          await record.post(command, input.operationId)
         )
       }
       return json({ error: "Method not allowed" }, 405)
