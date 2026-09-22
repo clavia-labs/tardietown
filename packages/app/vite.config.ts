@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      "/api/colon": {
+      "/api/": {
         target: process.env.COLONY_SERVER_URL ?? "http://127.0.0.1:4244",
         changeOrigin: false
       }
