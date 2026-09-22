@@ -519,3 +519,22 @@
 .resident-events pre { overflow: auto; max-height: 240px; white-space: pre-wrap; overflow-wrap: anywhere; font: 10px/1.5 var(--mono); padding: 8px; background: #f0f1e9; border-radius: 4px; }
 .resident-profile .resident-events > button { margin-top: 10px; padding: 5px 8px; border: 1px solid #d5d8c8; border-radius: 5px; background: transparent; color: #687461; font: 11px var(--brand); }
 .resident-events summary:focus-visible { outline: 2px solid #8b571e; outline-offset: 2px; }
+
+/* Package identities and controls share one compact row. */
+.packages-panel .package-heading { flex-wrap: nowrap; align-items: center; gap: 10px; }
+.package-logo { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 8px; }
+.package-logo-exa { background: #e8edfc; color: #3159b5; font: 600 17px/1 var(--brand); letter-spacing: -1px; }
+.package-logo-workspace { background: #e7ecdf; color: #627553; }
+.package-identity { min-width: 0; flex: 1; }
+.package-identity p { margin: 3px 0 0; color: #77816f; font: 11px/1.4 var(--brand); }
+.package-badge { padding: 2px 6px; border-radius: 4px; background: #eeeee6; white-space: nowrap; }
+.packages-panel .package-toggle { position: relative; flex: none; width: 30px; height: 18px; padding: 2px; border: 0; border-radius: 20px; background: #ced2c6; }
+.package-toggle > span { display: block; width: 14px; height: 14px; border-radius: 50%; background: #faf9f5; box-shadow: 0 1px 2px #0002; }
+.packages-panel .package-toggle[aria-checked="true"] { background: #6e825e; }
+.package-toggle[aria-checked="true"] > span { transform: translateX(12px); }
+.package-toggle:disabled { opacity: .5; cursor: wait; }
+.packages-panel .package-credential { margin: 12px 0 0 46px; gap: 6px; }
+.packages-panel .package-credential button { padding: 3px 6px; border: 0; background: transparent; color: #687461; font: 11px var(--brand); }
+.packages-panel .package-credential button:hover { background: #eeeee6; }
+.packages-panel .package-entry form { margin-left: 46px; }
+.package-list { margin-right: -20px; padding-right: 20px; scrollbar-width: thin; scrollbar-gutter: stable; }
