@@ -163,7 +163,7 @@ export function EntryColonyPreview({
         thinking={thinking ? residents[turn % residents.length]?.id : undefined}
         latestPost={post}
       />
-        {selected && <ResidentProfile resident={selected} messages={posts} onClose={closeProfile} />}
+        {selected && <ResidentProfile resident={selected} karma={0} messages={posts} onClose={closeProfile} />}
       {libraryOpen && <LibraryBrowser entries={[]} residents={residents} onClose={toggleLibrary} />}
       {workspaceOpen && <ArtifactBrowser files={[]} residents={residents} onClose={toggleWorkspace} />}
       {boardOpen && !workspaceOpen && !libraryOpen && <aside className="entry-mini-board" aria-label="Preview forum">

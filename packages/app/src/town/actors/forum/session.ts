@@ -22,11 +22,27 @@ export interface ForumConnection {
   close: () => Promise<void>
 }
 
-// ForumSession routes board activity as actor messages; the host owns the queue.
+export interface ForumSchedulerOptions {
+  readonly maxConcurrent?: number
+  readonly random?: () => number
+}
+interface PendingWake {
+  readonly resident: Resident
+  readonly notification: string
+  readonly updates: number
+}
+
+// Keep one pending wake per resident; select the next turn using current karma.
+// Negative karma retains a chance, and positive influence is capped.
+export const karmaWeight = (karma: number) => 1 + Math.min(10, Math.max(0, karma))
 export class ForumSession {
   private state: ForumSessionState
   private readonly listeners = new Set<() => void>()
-  private readonly calls = new Map<AbortController, Promise<void>>()
+  private readonly calls = new Map<string, { abort: AbortController; job: Promise<void> }>()
+  private readonly waiting = new Map<string, PendingWake>()
+  private readonly maxConcurrent: number
+  private readonly random: () => number
+  private drainScheduled = false
   private readonly unsubscribe: () => void
   private readonly unsubscribeMissions?: () => void
   private missionSnapshot: readonly Mission[] = []
@@ -37,12 +53,20 @@ export class ForumSession {
     readonly residents: readonly Resident[],
     readonly connection: ForumConnection,
     limit: number,
-    readonly missions?: MissionStore
+    readonly missions?: MissionStore,
+    scheduler: ForumSchedulerOptions = {}
   ) {
     if (!Number.isSafeInteger(limit) || limit < residents.length)
       throw new Error("Turn budget must cover each duck's mission message.")
+    this.maxConcurrent = scheduler.maxConcurrent ?? DEFAULT_FORUM_CONCURRENCY
+    if (!Number.isSafeInteger(this.maxConcurrent) || this.maxConcurrent < 1)
+      throw new Error("Concurrency must be a positive integer.")
+    this.random = scheduler.random ?? Math.random
     this.state = { running: false, thinking: [], pending: 0, turns: 0, limit }
-    this.unsubscribe = board.subscribe((message) => this.notify(message))
+    this.unsubscribe = board.subscribe((event) => {
+      if (event.type === "MessagePosted") this.notify(event.message)
+      // Votes change the next lottery's weights without creating new work.
+    })
     if (missions) {
       this.missionSnapshot = missions.list()
       this.unsubscribeMissions = missions.subscribe(() =>
@@ -68,37 +92,76 @@ export class ForumSession {
     this.update({ thinking: [...next] })
   }
   private send(resident: Resident, notification: string) {
-    if (
-      this.closed ||
-      !this.state.running ||
-      this.state.turns >= this.state.limit
-    )
-      return
-    const abort = new AbortController()
-    this.update({
-      turns: this.state.turns + 1,
-      pending: this.state.pending + 1
+    if (this.closed) return
+    const previous = this.waiting.get(resident.id)
+    this.waiting.set(resident.id, {
+      resident,
+      notification,
+      updates: (previous?.updates ?? 0) + 1
     })
-    const job = this.connection
-      .wake(resident, notification, this.residents, abort.signal)
+    this.updatePending()
+    this.scheduleDrain()
+  }
+  private updatePending() {
+    this.update({ pending: this.calls.size + this.waiting.size })
+  }
+  private scheduleDrain() {
+    if (this.closed || !this.state.running || this.drainScheduled) return
+    this.drainScheduled = true
+    // Collect the entire broadcast before choosing, rather than admitting the
+    // first residents in roster order as notifications arrive.
+    queueMicrotask(() => {
+      this.drainScheduled = false
+      this.drain()
+    })
+  }
+  private drain() {
+    while (
+      !this.closed && this.state.running &&
+      this.calls.size < this.maxConcurrent && this.state.turns < this.state.limit
+    ) {
+      const eligible = [...this.waiting.values()].filter(({ resident }) => !this.calls.has(resident.id))
+      if (!eligible.length) break
+      const karma = this.board.karma()
+      const weights = eligible.map(({ resident }) => karmaWeight(karma[resident.id] ?? 0))
+      let ticket = this.random() * weights.reduce((sum, weight) => sum + weight, 0)
+      let selected = eligible[eligible.length - 1]!
+      for (let index = 0; index < eligible.length; index++) {
+        ticket -= weights[index]!
+        if (ticket < 0) { selected = eligible[index]!; break }
+      }
+      this.waiting.delete(selected.resident.id)
+      this.start(selected)
+    }
+    if (!this.calls.size && this.state.turns >= this.state.limit)
+      this.update({ running: false })
+  }
+  private start({ resident, notification, updates }: PendingWake) {
+    const abort = new AbortController()
+    const text = updates === 1 ? notification
+      : `${updates} updates are waiting. Read unread forum activity and list missions to catch up. Latest update: ${notification}`
+    const job = Promise.resolve()
+      .then(() => {
+        abort.signal.throwIfAborted()
+        return this.connection.wake(resident, text, this.residents, abort.signal)
+      })
       .then(
         () => {},
         (error: unknown) => {
           if (!abort.signal.aborted) {
-            this.update({
-              error: error instanceof Error ? error.message : String(error)
-            })
+            this.update({ error: error instanceof Error ? error.message : String(error) })
             this.pause()
           }
         }
       )
       .finally(() => {
-        this.calls.delete(abort)
-        this.update({ pending: this.state.pending - 1 })
-        if (this.state.pending === 0 && this.state.turns >= this.state.limit)
-          this.update({ running: false })
+        this.calls.delete(resident.id)
+        this.updatePending()
+        this.scheduleDrain()
       })
-    this.calls.set(abort, job)
+    this.calls.set(resident.id, { abort, job })
+    // A queued notification costs nothing until it gets an execution slot.
+    this.update({ turns: this.state.turns + 1, pending: this.calls.size + this.waiting.size })
   }
   private notify(message: ForumMessage) {
     const participants = new Set(
@@ -191,14 +254,22 @@ export class ForumSession {
   }
   pause() {
     this.update({ running: false })
-    this.calls.forEach((_, abort) => abort.abort())
+    this.calls.forEach(({ abort }, id) => {
+      // Keep interrupted work eligible, but wait for the old call to settle
+      // before allowing that resident to run again after resume.
+      const resident = this.residents.find((resident) => resident.id === id)
+      if (resident) this.send(resident, "Your previous turn was interrupted. Read unread forum activity and list missions before continuing.")
+      abort.abort()
+    })
   }
   async close() {
     this.closed = true
     this.pause()
     this.unsubscribe()
     this.unsubscribeMissions?.()
-    await Promise.allSettled(this.calls.values())
+    this.waiting.clear()
+    this.updatePending()
+    await Promise.allSettled([...this.calls.values()].map(({ job }) => job))
     await this.connection.close()
     this.listeners.clear()
   }

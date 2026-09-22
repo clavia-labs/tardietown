@@ -3,8 +3,9 @@ import { useEffect, useRef } from "react"
 import { ResidentAvatar } from "../../scene/ResidentAvatar"
 import type { Resident } from "../../world"
 
-export function ResidentProfile({ resident, messages, onClose }: {
+export function ResidentProfile({ resident, messages, karma, onClose }: {
   resident: Resident
+  karma: number
   messages: readonly { author: string; parentId?: string; score?: number }[]
   onClose: () => void
 }) {
@@ -30,7 +31,6 @@ export function ResidentProfile({ resident, messages, onClose }: {
     }
   }, [onClose])
   const contributions = messages.filter((message) => message.author === resident.id)
-  const karma = contributions.reduce((sum, message) => sum + (message.score ?? 0), 0)
   return (
     <aside ref={card} className="resident-profile" aria-label={`${resident.name}'s profile`}>
       <header>

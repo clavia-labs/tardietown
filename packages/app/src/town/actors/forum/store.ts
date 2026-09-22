@@ -1,3 +1,4 @@
+import type { ForumEvent, Vote, VoteChanged } from "./events"
 import { Clock, Effect } from "effect"
 import {
   decodeForumCommand,
@@ -19,19 +20,33 @@ export const DEFAULT_FORUM_POLICY: ForumPolicy = Object.freeze({
 // MemoryForum retains public messages and author-private read state for one in-memory forum.
 export class MemoryForum {
   private missionResolver: ((messageId: string) => import("./missions/store").Mission | undefined) | undefined
-  private readonly votes = new Map<string, Map<string, number>>()
+  private readonly votes = new Map<string, Map<string, Vote>>()
   private readonly changes = new Set<() => void>()
   subscribeChanges = (listener: () => void) => {
     this.changes.add(listener)
     return () => { this.changes.delete(listener) }
   }
   private score(id: string) {
-    return [...(this.votes.get(id)?.values() ?? [])].reduce((sum, vote) => sum + vote, 0)
+    return [...(this.votes.get(id)?.values() ?? [])].reduce<number>((sum, vote) => sum + vote, 0)
+  }
+  // Reputation is derived from current votes, so replacements and removals
+  // cannot leave a separate karma counter out of sync.
+  karma(residentIds: readonly string[] = []): Readonly<Record<string, number>> {
+    const totals = new Map(residentIds.map((id) => [id, 0]))
+    for (const message of this.messages)
+      totals.set(message.author, (totals.get(message.author) ?? 0) + this.score(message.id))
+    return Object.freeze(Object.fromEntries(totals))
+  }
+  private applyVoteChanged(event: VoteChanged) {
+    const votes = this.votes.get(event.messageId) ?? new Map<string, Vote>()
+    if (event.newVote === 0) votes.delete(event.voterId)
+    else votes.set(event.voterId, event.newVote)
+    this.votes.set(event.messageId, votes)
   }
   readonly policy: ForumPolicy
-  private readonly listeners = new Set<(message: ForumMessage) => void>()
+  private readonly listeners = new Set<(event: ForumEvent) => void>()
   private revision = 0
-  subscribe(listener: (message: ForumMessage) => void) {
+  subscribe(listener: (event: ForumEvent) => void) {
     this.listeners.add(listener)
     return () => {
       this.listeners.delete(listener)
@@ -115,6 +130,7 @@ export class MemoryForum {
     const handled = this.handled.get(author) ?? new Set<string>()
     this.seen.set(author, seen)
     this.handled.set(author, handled)
+    let event: ForumEvent | undefined
     const result = (): ForumResult => {
       if (command.kind === "read_board") {
         if (
@@ -169,13 +185,16 @@ export class MemoryForum {
         if (!message) return { ok: false, code: "not_found", message: "Message does not exist." }
         if (message.author === author) return invalid("You cannot vote on your own contribution.")
         if (!seen.has(message.id)) return { ok: false, code: "not_seen", message: "Read the message before voting." }
-        const votes = this.votes.get(message.id) ?? new Map<string, number>()
+        const previousVote = this.votes.get(message.id)?.get(author) ?? 0
         const direction = command.kind === "upvote" ? 1 : -1
-        if (command.remove) {
-          if (votes.get(author) === direction) votes.delete(author)
-        } else votes.set(author, direction)
-        this.votes.set(message.id, votes)
-        return { ok: true, kind: command.kind, messageId: message.id, vote: votes.get(author) ?? 0, score: this.score(message.id) }
+        const newVote = command.remove
+          ? previousVote === direction ? 0 : previousVote
+          : direction
+        if (newVote !== previousVote) {
+          event = Object.freeze({ type: "VoteChanged", voterId: author, messageId: message.id, previousVote, newVote, at })
+          this.applyVoteChanged(event)
+        }
+        return { ok: true, kind: command.kind, messageId: message.id, vote: newVote, score: this.score(message.id) }
       }
       if (command.kind === "acknowledge") {
         if (command.messageIds.length > this.policy.maxAcknowledgments)
@@ -237,19 +256,15 @@ export class MemoryForum {
       seen.add(id)
       handled.add(id)
       if (parent) handled.add(parent.id)
+      event = Object.freeze({ type: "MessagePosted", message })
       return { ok: true, kind: command.kind, message }
     }
     const output = Object.freeze(result())
     this.operations.set(key, { fingerprint, result: output })
-    if (
-      output.ok &&
-      (output.kind === "create_post" || output.kind === "reply")
-    ) {
+    const committedEvent = event
+    if (committedEvent) {
       this.revision++
-      this.listeners.forEach((listener) => listener(output.message))
-    }
-    if (output.ok && (output.kind === "upvote" || output.kind === "downvote" || output.kind === "create_post" || output.kind === "reply")) {
-      if (output.kind === "upvote" || output.kind === "downvote") this.revision++
+      this.listeners.forEach((listener) => listener(committedEvent))
       this.changes.forEach((listener) => listener())
     }
     return output

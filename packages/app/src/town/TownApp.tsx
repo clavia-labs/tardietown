@@ -268,6 +268,7 @@ function ServerColony({
           residents={snapshot.residents}
           palettes={snapshot.palettes}
           messages={snapshot.messages}
+          karma={snapshot.karma}
           artifacts={snapshot.artifacts}
           missions={snapshot.missions}
           library={snapshot.library}

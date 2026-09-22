@@ -25,6 +25,7 @@ export interface ColonySnapshot {
   residents: readonly Resident[]
   palettes: ReturnType<typeof shuffleDuckPalettes>
   messages: readonly ForumMessage[]
+  karma: Readonly<Record<string, number>>
   artifacts?: readonly Artifact[]
   missions?: readonly Mission[]
   library?: readonly LibraryEntry[]

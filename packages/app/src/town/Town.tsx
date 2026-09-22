@@ -18,6 +18,7 @@ export function Town({
   residents,
   palettes,
   messages,
+  karma,
   artifacts = [],
   missions = [],
   readArtifact,
@@ -37,6 +38,7 @@ export function Town({
   residents: readonly Resident[]
   palettes: ReturnType<typeof shuffleDuckPalettes>
   messages: readonly ForumMessage[]
+  karma: Readonly<Record<string, number>>
   artifacts?: readonly Artifact[] | undefined
   missions?: readonly Mission[] | undefined
   readArtifact?: ReadArtifact | undefined
@@ -134,7 +136,7 @@ export function Town({
             </p>
           )}
         </section>
-        {selected && <ResidentProfile resident={selected} messages={messages} onClose={closeProfile} />}
+        {selected && <ResidentProfile resident={selected} karma={karma[selected.id] ?? 0} messages={messages} onClose={closeProfile} />}
         {libraryOpen && <LibraryBrowser entries={library} read={readLibrary} residents={residents} onClose={closeLibrary} />}
         {workspaceOpen && <ArtifactBrowser files={artifacts} read={readArtifact} residents={residents} onClose={toggleWorkspace} initialPath={artifactTarget?.path} initialRevision={artifactTarget?.revision} />}
         {boardOpen && !workspaceOpen && !libraryOpen && (

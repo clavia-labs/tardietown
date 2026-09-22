@@ -296,7 +296,8 @@ export function createColonyService(options: ColonyServerOptions) {
             }
           },
           input.maxTurns,
-          missions
+          missions,
+          { maxConcurrent: input.maxConcurrent }
         )
         const current = session
         let expiryTimer: ReturnType<typeof setTimeout> | undefined
@@ -353,6 +354,7 @@ export function createColonyService(options: ColonyServerOptions) {
             residents,
             palettes,
             messages: board.snapshot(),
+            karma: board.karma(residents.map(({ id }) => id)),
             artifacts: artifacts.list(),
             missions: missions.list(),
             library: library.list(),
