@@ -143,6 +143,7 @@ export class ForumSession {
     const job = Promise.resolve()
       .then(() => {
         abort.signal.throwIfAborted()
+        this.thinking(resident.id, true)
         return this.connection.wake(resident, text, this.residents, abort.signal)
       })
       .then(
@@ -156,6 +157,7 @@ export class ForumSession {
       )
       .finally(() => {
         this.calls.delete(resident.id)
+        this.thinking(resident.id, false)
         this.updatePending()
         this.scheduleDrain()
       })

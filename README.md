@@ -48,16 +48,16 @@ packages/
       main.ts               # Server configuration and startup
       colonies.ts           # Town lifecycle, agent host, and HTTP routes
   characters/               # Reusable Three.js character models and animation
-scripts/setup.ts            # Link local Tardigrade packages
+scripts/setup.ts            # Install the locked registry dependencies
 ```
 
 The library holds reference material; the town workspace holds assignments and deliverables. An agent's private research workspace is supplied by `tardie/code` and configured through `town/actors/resident/components/code/index.ts`.
 
 ## Run locally
 
-Requires Bun and a local Tardigrade checkout (defaults to `../tardigrade`).
+Requires Bun 1.4.0 or newer. Tardie is installed from npm; no sibling checkout or global package links are needed.
 
-1. Run `bun run setup` to link framework packages and install dependencies. Set `TARDIGRADE_DIR` if the checkout is elsewhere.
+1. Run `bun run setup` (or `bun install --frozen-lockfile`) to install the locked dependencies.
 2. Set `OPENROUTER_API_KEY` for the configured model and `EXA_API_KEY` for research tools. Model configuration is in `packages/app/tardie-town.config.json`.
 3. Run `bun run dev:server` to start the colony server on port 4244.
 4. In another terminal, run `bun run dev` and open the URL Vite prints.
@@ -82,7 +82,7 @@ The browser-hosted agent runtime has been removed.
 - `bun run typecheck`
 - `bun run build`
 
-Both require the linked Tardigrade packages to be available. There is currently no test suite.
+The lockfile currently resolves `tardie@next` to `0.30.0-rc.324`, with Effect `4.0.0-rc.115`. Install with the frozen lockfile to retain that release if npm tags move. The optional `@tardie/ai-bedrock` package is included for upstream TypeScript declarations; the app still uses the configured OpenRouter provider. The former private UI dependency is now the licensed stylesheet in `src/ui/theme.css`. There is currently no test suite.
 
 ## Karma and turn scheduling
 

@@ -11,7 +11,8 @@ import { LibraryStore, DEFAULT_LIBRARY_POLICY, type LibraryPolicy } from "../src
 import { createLibraryActor, libraryCollectionLayer, type LibraryActorDispatcher } from "../src/town/actors/library/actor"
 import { libraryLayer } from "../src/town/actors/resident/components/library"
 import { Effect, Layer } from "effect"
-import { Infer } from "tardie/agent"
+import type { LanguageModel } from "effect/unstable/ai"
+import type { ModelLock } from "tardie/model/lock"
 import { createBunHost } from "tardie/bun"
 import { createResearchActor } from "../src/town/actors/resident/actor"
 import { exaLayer, type ExaOptions } from "../src/town/actors/resident/components/code/exa"
@@ -42,7 +43,7 @@ export interface ColonyServerOptions {
   exa?: ExaOptions
   workspacePolicy?: Partial<WorkspacePolicy>
 
-  layers: Layer.Layer<Infer>
+  layers: Layer.Layer<LanguageModel.LanguageModel | ModelLock>
   model: string
   maxAgents?: number | undefined
   maxColonies?: number | undefined
@@ -199,7 +200,7 @@ export function createColonyService(options: ColonyServerOptions) {
               key: JSON.stringify([request.author, invocationId]),
               signal
             })
-          )
+          ).pipe(Effect.orDie)
       }
       const libraryDispatcher = (author: string): LibraryActorDispatcher => ({
         policy: library.policy,
@@ -209,40 +210,20 @@ export function createColonyService(options: ColonyServerOptions) {
               { ...request, author, operationId },
               { key: JSON.stringify([author, operationId]), signal }
             )
-          )
+          ).pipe(Effect.orDie)
       })
       const definition = createResearchActor(
         input.maxToolCalls,
         options.exa?.policy,
         options.workspacePolicy
       )
-      let session: ForumSession | undefined
-      const observed = Layer.effect(
-        Infer,
-        Effect.map(Infer, (binding) => ({
-          ...binding,
-          react: (...args: Parameters<typeof binding.react>) =>
-            Effect.suspend(() => {
-              session?.thinking(args[0].identity.thread, true)
-              return binding
-                .react(...args)
-                .pipe(
-                  Effect.onExit(() =>
-                    Effect.sync(() =>
-                      session?.thinking(args[0].identity.thread, false)
-                    )
-                  )
-                )
-            })
-        }))
-      ).pipe(Layer.provide(options.layers))
       const host = await createBunHost({
         actor: definition,
         storage: ":memory:",
         driver: { maxConcurrentThreads: input.maxConcurrent },
         layersFor: (thread) =>
           Layer.mergeAll(
-            observed,
+            options.layers,
             forumLayer(forumDispatcher(thread)),
             artifactLayer(artifactDispatcher, thread),
             missionLayer(missions, (command, operationId) => Effect.tryPromise((signal) =>
@@ -271,7 +252,7 @@ export function createColonyService(options: ColonyServerOptions) {
             )
           )
         )
-        session = new ForumSession(
+        const session = new ForumSession(
           board,
           residents,
           {

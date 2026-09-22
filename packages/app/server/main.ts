@@ -1,8 +1,6 @@
 import { join } from "node:path"
 export const DEFAULT_ARTIFACT_DIRECTORY = join(import.meta.dir, "../.artifacts")
-import { bunModelServices } from "@clavia/tardigrade-server/model-services"
-import { modelAdapters } from "@clavia/tardigrade-model/adapter"
-import { openAICompatibleAdapter } from "@clavia/tardigrade-model/openai"
+import { bunModelServices } from "tardie/server/model-services"
 import { createColonyService } from "./colonies"
 import { DEFAULT_EXA_POLICY } from "../src/town/actors/resident/components/code/exa"
 import { DEFAULT_COLONY_SERVER_PORT } from "../src/town/protocol"
@@ -13,8 +11,7 @@ const services = await bunModelServices({
   configFile:
     process.env.TARDIGRADE_CONFIG_PATH ??
     new URL("../tardie-town.config.json", import.meta.url),
-  env: process.env,
-  adapters: modelAdapters(openAICompatibleAdapter)
+  env: process.env
 })
 const configuredNumber = (name: string) =>
   process.env[name] === undefined ? undefined : Number(process.env[name])

@@ -36,7 +36,12 @@ export function createResearchActor(
             library(),
             code(researchPolicy, workspacePolicy)
           ],
-          { limit: maxToolCalls }
+          {
+            limit: maxToolCalls,
+            usage: (view) => view.children.reduce((total, child) => total + child.calls.length, 0),
+            onExhausted: (reason, settle) => settle({ error: reason }),
+            rejectionMessage: "Tool budget reached. Finish your turn using the information already gathered."
+          }
         ),
         outputValidateOnce
       ])
