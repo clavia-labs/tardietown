@@ -9,11 +9,11 @@ export function SpendBudget({ spend, onAdd }: { spend?: SpendState | undefined; 
   const [error, setError] = useState<string>()
   const operation = useRef<string | undefined>(undefined)
   return <div className="town-budget" aria-label="Model spending budget">
-    <span>{spend?.unavailable ? "Cost unavailable · paused" : "Model budget remaining"}</span>
-    <div className="town-budget-balance"><strong>{spend && !spend.unavailable ? `${spend.estimated ? "≈ " : ""}${dollars(spend.remainingUsd)}` : "—"}</strong>
-      {spend && onAdd && <button type="button" onClick={() => setOpen(value => !value)} aria-expanded={open}><Plus size={14} aria-hidden="true" /> Add budget</button>}
+    <div className="town-budget-summary">
+      <div className="town-budget-balance"><strong>{spend && !spend.unavailable ? `${spend.estimated ? "≈ " : ""}${dollars(spend.remainingUsd)}` : "—"}</strong><span>{spend?.unavailable ? "Cost unavailable" : "left"}</span></div>
+      {spend && <small title={spend.reservedUsd > 0 ? "Model calls in progress; spend updates when each turn finishes" : "Model spending"}>{dollars(spend.spentUsd)} / ${spend.limitUsd.toFixed(2)} spent</small>}
     </div>
-    {spend && <small>{dollars(spend.spentUsd)} spent of {dollars(spend.limitUsd)}{spend.reservedUsd > 0 ? " · calls in progress" : ""}</small>}
+    {spend && onAdd && <button className="town-budget-add" type="button" onClick={() => setOpen(value => !value)} aria-label="Add budget" title="Add budget" aria-expanded={open}><Plus size={18} strokeWidth={1.75} aria-hidden="true" /></button>}
     {open && onAdd && <form className="town-budget-form" onSubmit={async event => {
       event.preventDefault()
       if (saving || !validBudget(amount)) return

@@ -410,15 +410,20 @@
 .browser-board .forum-thread-title { font-size: 18px; line-height: 1.3; }
 .browser-board .forum-thread-card small { margin-top: 5px; }
 
-.browser-colony > header .town-budget { margin-left: auto; display: grid; gap: 2px; flex: none; text-align: right; }
-.town-budget > span { color: #77816f; font: 10px/1.4 var(--brand); }
-.town-budget strong { color: #384332; font: 600 18px/1.3 var(--brand); font-variant-numeric: tabular-nums; }
-.town-budget small { font: 12px var(--brand); }
-.town-budget-balance { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
-.town-budget-balance button { display: inline-flex; align-items: center; gap: 4px; }
-.town-budget > small { color: #77816f; font: 10px/1.4 var(--brand); }
-.town-budget-form { max-width: 280px; text-align: left; padding: 10px 0; }
+/* Keep the balance, top-up, and pause controls on one compact header row. */
+.browser-colony > header { align-items: center; }
+.browser-colony > header .town-budget { margin-left: auto; display: grid; grid-template-columns: auto auto; align-items: center; gap: 4px 10px; flex: none; text-align: right; }
+.town-budget-summary { display: grid; gap: 2px; }
+.town-budget-balance { display: flex; align-items: baseline; justify-content: flex-end; gap: 5px; }
+.town-budget-balance strong { color: #384332; font: 600 17px/1.2 var(--brand); font-variant-numeric: tabular-nums; }
+.town-budget-balance span, .town-budget-summary small { color: #77816f; font: 11px/1.4 var(--brand); }
+.town-budget-summary small { font-size: 10px; font-variant-numeric: tabular-nums; }
+.browser-colony .town-budget-add { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border: 1px solid #d5d8c8; border-radius: 6px; background: transparent; color: #687461; }
+.browser-colony .town-budget-add:focus-visible { outline: 2px solid #8b571e; outline-offset: 2px; }
+.browser-colony .town-budget-add:active { background: #e4e8dc; }
+@media (hover: hover) { .browser-colony .town-budget-add:hover { background: #eeeee6; color: #384332; } }
+.town-budget-form { grid-column: 1 / -1; max-width: 280px; text-align: left; padding: 10px 0; }
 .town-budget-form input { width: 80px; padding: 6px; margin-left: 6px; }
 .town-budget-form p { font: 11px/1.4 var(--brand); }
 .town-budget-form button + button { margin-left: 6px; }
-@media (max-width: 600px) { .browser-colony > header { flex-wrap: wrap; } .browser-colony > header .town-budget { margin-left: 0; } }
+@media (max-width: 600px) { .browser-colony > header { flex-wrap: wrap; } .browser-colony > header .town-budget { margin-left: auto; } }
