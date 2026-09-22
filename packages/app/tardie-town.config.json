@@ -3,7 +3,7 @@
     "TARDIGRADE_CONFIG": {
       "models": {
         "allow": "*",
-        "default": { "provider": "openrouter", "model_id": "openai/gpt-6-astra" },
+        "default": { "provider": "openrouter", "model_id": "openai/gpt-5.6-terra" },
         "providers": {
           "openrouter": {
             "baseUrl": "https://openrouter.ai/api/v1",
