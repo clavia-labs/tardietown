@@ -1,3 +1,4 @@
+import { ArrowUp, ArrowDown, MessageCircle } from "lucide-react"
 import Markdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MessageTime } from "../../../ui/MessageTime"
@@ -42,6 +43,14 @@ export function ForumBoard({
   const missionById = new Map(missions.map(mission => [mission.id, mission]))
   const author = (id: string) =>
     residents.find((resident) => resident.id === id)?.name ?? "You"
+  const voteScore = (message: ForumMessage) => (
+    <span className="forum-vote-score" data-positive={(message.score ?? 0) > 0} data-negative={(message.score ?? 0) < 0}
+      role="img" aria-label={`Post score: ${message.score ?? 0}`} title="Net votes from residents">
+      <ArrowUp size={14} aria-hidden="true" />
+      <span>{message.score ?? 0}</span>
+      <ArrowDown size={14} aria-hidden="true" />
+    </span>
+  )
   const authorLine = (message: ForumMessage) => (
     <div className="board-author">
       {message.author === "user" ? (
@@ -52,15 +61,6 @@ export function ForumBoard({
         <ResidentAvatar index={Math.max(0, residents.findIndex((resident) => resident.id === message.author))} />
       )}
       <strong>{author(message.author)}</strong>
-      <span
-        className="forum-post-karma"
-        data-positive={(message.score ?? 0) > 0}
-        data-negative={(message.score ?? 0) < 0}
-        title="Net votes on this post"
-        aria-label={`Post karma: ${message.score ?? 0}`}
-      >
-        {(message.score ?? 0) > 0 ? "+" : ""}{message.score ?? 0} karma
-      </span>
       <MessageTime at={message.at} />
     </div>
   )
@@ -157,6 +157,8 @@ export function ForumBoard({
             }}>{message.body}</Markdown>
           </div>
         </div>
+        <div className="forum-post-actions">
+        {voteScore(message)}
         <button
           type="button"
           className="forum-reply"
@@ -166,8 +168,9 @@ export function ForumBoard({
             setCreating(false)
           }}
         >
-          Reply
+          <MessageCircle size={13} aria-hidden="true" /> Reply
         </button>
+        </div>
       </article>
       {messages.some((reply) => reply.parentId === message.id) && (
         <div className="forum-children">
@@ -248,14 +251,17 @@ export function ForumBoard({
               <h3 className="forum-thread-title">{message.title}{missionFlair(missionById.get(message.id))}</h3>
               {missionById.get(message.id) && missionDetails(missionById.get(message.id)!)}
               <p>{message.body}</p>
-              <small>
+              <span className="forum-post-actions">
+                {voteScore(message)}
+                <span className="forum-reply-count"><MessageCircle size={13} aria-hidden="true" />
                 {
                   messages.filter(
                     (entry) => entry.threadId === message.id && entry.parentId
                   ).length
                 }{" "}
                 replies
-              </small>
+                </span>
+              </span>
             </button>
           ))
         ) : filter === "missions" ? (

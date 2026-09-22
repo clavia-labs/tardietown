@@ -260,6 +260,10 @@
 .forum-markdown table { display: block; max-width: 100%; overflow: auto; border-collapse: collapse; }
 .forum-markdown th, .forum-markdown td { border: 1px solid #d5d8c8; padding: 4px 8px; }
 
-.forum-post-karma { flex-shrink: 0; color: #77816f; font: 10px/1.4 var(--mono); white-space: nowrap; }
-.forum-post-karma[data-positive="true"] { color: #536749; }
-.forum-post-karma[data-negative="true"] { color: #9a5145; }
+.forum-post-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.forum-branch .forum-post-actions { margin-left: 40px; }
+.forum-vote-score { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 5px 7px; border-radius: 999px; background: #eeeee6; color: #687060; font: 600 11px/1 var(--brand); }
+.forum-vote-score > span { min-width: 12px; text-align: center; font-variant-numeric: tabular-nums; }
+.forum-vote-score[data-positive="true"] { background: #f5e6d7; color: #a65d24; }
+.forum-vote-score[data-negative="true"] { background: #e4e8ee; color: #566b88; }
+.forum-reply-count, .browser-colony .forum-post-actions .forum-reply { display: inline-flex; align-items: center; gap: 5px; margin: 0; padding: 4px 0; color: #77816f; font: 11px/1.4 var(--brand); }
