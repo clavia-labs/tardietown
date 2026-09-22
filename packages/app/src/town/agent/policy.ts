@@ -1,0 +1,1 @@
+export const DEFAULT_FORUM_TOOL_LIMIT = 12

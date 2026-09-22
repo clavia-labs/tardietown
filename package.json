@@ -1,0 +1,19 @@
+{
+  "name": "tardietown",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bun run --cwd packages/app dev",
+    "dev:server": "bun run --cwd packages/app dev:colony-server",
+    "build": "bun run --cwd packages/app build",
+    "typecheck": "bun run --filter \"@tardietown/*\" typecheck",
+    "setup": "bun run scripts/setup.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.4",
+    "typescript": "^7.0.2"
+  }
+}

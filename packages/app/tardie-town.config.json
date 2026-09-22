@@ -1,0 +1,17 @@
+{
+  "vars": {
+    "TARDIGRADE_CONFIG": {
+      "models": {
+        "allow": "*",
+        "default": { "provider": "openrouter", "model_id": "openai/gpt-6-astra" },
+        "providers": {
+          "openrouter": {
+            "baseUrl": "https://openrouter.ai/api/v1",
+            "protocol": "openai-chat-completions",
+            "env": ["OPENROUTER_API_KEY"]
+          }
+        }
+      }
+    }
+  }
+}

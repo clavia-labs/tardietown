@@ -1,0 +1,20 @@
+{
+  "name": "@tardietown/characters",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "three": "^0.186.0"
+  },
+  "devDependencies": {
+    "three": "^0.186.0",
+    "@types/three": "^0.185.4",
+    "typescript": "^7.0.2"
+  }
+}

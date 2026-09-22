@@ -1,0 +1,36 @@
+{
+  "name": "@tardietown/app",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "dev:server": "bun run server/main.ts",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.server.json",
+    "dev:colony-server": "bun run server/main.ts",
+    "dev:legacy-server": "bun run server/legacy.ts"
+  },
+  "dependencies": {
+    "@clavia/tardigrade-client": "link:@clavia/tardigrade-client",
+    "@clavia/tardigrade-ui": "link:@clavia/tardigrade-ui",
+    "@tardietown/characters": "workspace:*",
+    "effect": "4.0.0-rc.110",
+    "lucide-react": "^1.40.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "tardie": "link:tardie",
+    "three": "^0.186.0"
+  },
+  "devDependencies": {
+    "@clavia/tardigrade-model": "link:@clavia/tardigrade-model",
+    "@clavia/tardigrade-server": "link:@clavia/tardigrade-server",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@types/three": "^0.185.4",
+    "@vitejs/plugin-react": "^6.1.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.2"
+  }
+}
