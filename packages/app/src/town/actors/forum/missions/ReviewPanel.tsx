@@ -1,9 +1,10 @@
+import { ArrowUp, ArrowDown } from "lucide-react"
 import { useState, type ReactNode } from "react"
 import type { Mission, MissionResult } from "./store"
 import type { Resident } from "../../../world"
 export type ReviewMission = (missionId: string, reviewId: string, decision: "complete" | "needs_work", reason: string, operationId: string) => Promise<MissionResult>
 
-export function ReviewPanel({ mission, residents, onReview, artifact }: { artifact?: ReactNode; mission: Mission; residents: readonly Resident[]; onReview?: ReviewMission | undefined }) {
+export function ReviewPanel({ mission, residents, onReview, artifact, showComments = false }: { showComments?: boolean; artifact?: ReactNode; mission: Mission; residents: readonly Resident[]; onReview?: ReviewMission | undefined }) {
   const [reason, setReason] = useState("")
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string>()
@@ -21,15 +22,18 @@ export function ReviewPanel({ mission, residents, onReview, artifact }: { artifa
   if (!mission.reviewId) return null
   return <section className="mission-review" aria-label="Mission completion votes">
     {artifact}
-    <details className="mission-review-votes"><summary>{votes.filter(vote => vote.decision === "complete").length} / {mission.approvalsRequired} approved{votes.some(vote => vote.decision === "needs_work") ? " · Needs work" : ""}{mission.humanReviewRequired && mission.status === "in_review" ? " · Your vote needed" : ""}</summary>
-    {votes.map(vote => <p key={vote.reviewer}><strong>{vote.reviewer === "user" ? "You" : residents.find(resident => resident.id === vote.reviewer)?.name ?? vote.reviewer}</strong> · {vote.decision === "complete" ? "Complete" : "Needs work"}<br />{vote.reason}</p>)}
-    {votes.length === 0 && <p>No votes yet for this revision.</p>}
-    </details>
+    <span className="mission-review-score" role="img" aria-label={`${votes.filter(vote => vote.decision === "complete").length} approvals, ${votes.filter(vote => vote.decision === "needs_work").length} needs work; ${mission.approvalsRequired} approvals required`} title={`${mission.approvalsRequired} approvals required`}>
+      <ArrowUp size={14} aria-hidden="true" /><span>{votes.filter(vote => vote.decision === "complete").length}</span>
+      <ArrowDown size={14} aria-hidden="true" /><span>{votes.filter(vote => vote.decision === "needs_work").length}</span>
+    </span>
+    {showComments && <div className="artifact-review-comments">
+      {votes.length ? votes.map(vote => <div key={vote.reviewer}><strong>{vote.reviewer === "user" ? "You" : residents.find(resident => resident.id === vote.reviewer)?.name ?? vote.reviewer}</strong><span> · {vote.decision === "complete" ? "Approved" : "Needs work"}</span><p>{vote.reason}</p></div>) : <p>No reviews for this revision yet.</p>}
+    </div>}
     {mission.status === "in_review" && mission.humanReviewRequired && onReview && <div className="mission-review-controls">
       <label>Has this mission been completed? Check its requirements and submitted evidence, then explain your vote.<textarea aria-label="Reason for completion vote" value={reason} onChange={event => setReason(event.target.value)} /></label>
       <div><button type="button" disabled={sending || !reason.trim()} onClick={() => void submit("complete")}>Complete</button><button type="button" disabled={sending || !reason.trim()} onClick={() => void submit("needs_work")}>Needs work</button></div>
       {error && <p role="alert">{error}</p>}
     </div>}
-    {(mission.reviews?.length ?? 0) > votes.length && <details><summary>Vote history</summary>{mission.reviews.map((vote, index) => <p key={index}>{residents.find(resident => resident.id === vote.reviewer)?.name ?? vote.reviewer} · {vote.decision.replace("_", " ")} · {vote.artifactPath} v{vote.artifactRevision}<br />{vote.reason}</p>)}</details>}
+
   </section>
 }

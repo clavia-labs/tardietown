@@ -1,3 +1,5 @@
+import { ReviewPanel } from "../forum/missions/ReviewPanel"
+import type { Mission } from "../forum/missions/store"
 import { ArrowLeft as PanelBack, X as PanelClose, MoreHorizontal as PanelMore } from "lucide-react"
 import { useEffect, useState } from "react"
 import Markdown from "react-markdown"
@@ -5,7 +7,7 @@ import remarkGfm from "remark-gfm"
 import type { Artifact, ArtifactDocument } from "./store"
 import type { Resident } from "../../world"
 export type ReadArtifact = (path: string, revision?: number) => Promise<{ artifact: ArtifactDocument; history: readonly Artifact[] }>
-export function ArtifactBrowser({ files, read, residents, onClose, initialPath, initialRevision, onBack }: { files: readonly Artifact[]; read?: ReadArtifact | undefined; residents: readonly Resident[]; onClose: () => void; onBack?: (() => void) | undefined; initialPath?: string | undefined; initialRevision?: number | undefined }) {
+export function ArtifactBrowser({ files, read, residents, onClose, initialPath, initialRevision, onBack, missions = [] }: { missions?: readonly Mission[]; files: readonly Artifact[]; read?: ReadArtifact | undefined; residents: readonly Resident[]; onClose: () => void; onBack?: (() => void) | undefined; initialPath?: string | undefined; initialRevision?: number | undefined }) {
   const [folder, setFolder] = useState("/")
   const [path, setPath] = useState<string>()
   const [revision, setRevision] = useState<number>()
@@ -28,6 +30,9 @@ export function ArtifactBrowser({ files, read, residents, onClose, initialPath, 
     }, cause => { if (!cancelled) setError(String(cause)) })
     return () => { cancelled = true }
   }, [path, revision, read, currentRevision])
+  const reviewMission = document && missions.find(mission => mission.artifactPath === document.path || mission.reviews?.some(vote => vote.artifactPath === document.path))
+  const revisionVotes = document && reviewMission?.reviews.filter(vote => vote.artifactPath === document.path && vote.artifactRevision === document.revision)
+  const revisionReviewId = reviewMission?.artifactPath === document?.path && reviewMission?.artifactRevision === document?.revision ? reviewMission?.reviewId : revisionVotes?.at(-1)?.reviewId
   const download = () => {
     if (!document) return
     const url = URL.createObjectURL(new Blob([document.content], { type: "text/markdown;charset=utf-8" }))
@@ -48,7 +53,9 @@ export function ArtifactBrowser({ files, read, residents, onClose, initialPath, 
         <p className="artifact-meta">{document.summary}</p>
         </div></details>
         </div>
-        <div className="artifact-document">{raw ? <pre>{document.content}</pre> : <Markdown remarkPlugins={[remarkGfm]} skipHtml components={{ img: ({alt}) => <span>{alt}</span>, a: ({href, children}) => <a href={href?.startsWith("https://") || href?.startsWith("http://") ? href : undefined} target="_blank" rel="noopener noreferrer">{children}</a> }}>{document.content}</Markdown>}</div>
+        <div className="artifact-document">{raw ? <pre>{document.content}</pre> : <Markdown remarkPlugins={[remarkGfm]} skipHtml components={{ img: ({alt}) => <span>{alt}</span>, a: ({href, children}) => <a href={href?.startsWith("https://") || href?.startsWith("http://") ? href : undefined} target="_blank" rel="noopener noreferrer">{children}</a> }}>{document.content}</Markdown>}
+          {reviewMission && revisionReviewId && <div className="artifact-reviews"><h3>Reviews · v{document.revision}</h3><ReviewPanel key={revisionReviewId} mission={{ ...reviewMission, reviewId: revisionReviewId, reviews: revisionVotes ?? [] }} residents={residents} showComments /></div>}
+        </div>
       </>}
     </> : <div className="artifact-files">{!entries.length ? <p>No documents yet.</p> : entries.map(name => {
       const file = files.find(file => file.path === folder + name)

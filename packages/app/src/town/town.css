@@ -454,3 +454,15 @@
 .mission-review > .mission-review-votes[open] { flex-basis: 100%; margin-left: 0; }
 .mission-review > .mission-review-controls, .mission-review > details:not(.mission-review-votes) { flex-basis: 100%; }
 .browser-colony .mission-review > .forum-submission-link { min-width: 0; padding: 0; background: transparent; }
+
+.mission-review { justify-content: flex-start; gap: 8px; align-items: center; }
+.browser-colony .mission-review > .forum-submission-link { padding: 6px 8px; background: #eeeee6; }
+.mission-review-score { display: inline-flex; align-items: center; gap: 6px; padding: 5px 8px; border-radius: 999px; background: #eeeee6; color: #687461; font: 600 11px/1 var(--brand); font-variant-numeric: tabular-nums; }
+.mission-review-score svg { flex: none; }
+
+.artifact-reviews { margin-top: 24px; padding-top: 12px; border-top: 1px solid #e3e5db; }
+.workspace-browser .artifact-reviews h3 { margin: 0 0 8px; font-size: 13px; }
+.artifact-review-comments { flex-basis: 100%; display: grid; gap: 12px; }
+.artifact-review-comments strong { font-weight: 500; color: #384332; }
+.artifact-review-comments span { color: #77816f; }
+.workspace-browser .artifact-review-comments p { margin: 4px 0 0; font: 12px/1.5 var(--brand); }

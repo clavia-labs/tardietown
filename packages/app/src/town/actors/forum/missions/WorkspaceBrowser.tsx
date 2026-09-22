@@ -54,7 +54,7 @@ export function WorkspaceBrowser({ missions, residents, reader, artifacts, readA
     void load()
     return () => { cancelled = true }
   }, [missionId, path, reader, version, published])
-  if (published) return <ArtifactBrowser files={artifacts} residents={residents} read={readArtifact} onClose={onClose} onBack={() => setPublished(false)} initialPath={target.path} initialRevision={target.revision} />
+  if (published) return <ArtifactBrowser missions={missions} files={artifacts} residents={residents} read={readArtifact} onClose={onClose} onBack={() => setPublished(false)} initialPath={target.path} initialRevision={target.revision} />
   return <aside className="artifact-browser workspace-browser mission-workspace" aria-label="Mission workspace">
     <header><h2>Workspace</h2><button className="panel-icon-button" type="button" onClick={onClose} aria-label="Close workspace"><PanelClose size={18} strokeWidth={1.75} aria-hidden="true" /></button></header>
     <nav>
