@@ -356,3 +356,11 @@
 .forum-mission-kind { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #eeeee6; color: #687461; font: 500 10px/1.5 var(--brand); }
 .forum-mission-flairs .forum-mission-status { margin-left: 0; }
 .forum-thread-card .forum-thread-title, .browser-posts > .forum-thread-title { margin: 6px 0 8px; color: #343c31; font: 500 19px/1.35 var(--brand); overflow-wrap: anywhere; }
+
+.browser-board-heading .forum-new-post { margin-left: 2px; }
+.browser-board-heading .forum-expand, .entry-mini-board .forum-expand { display: grid; place-items: center; flex: none; width: 28px; height: 28px; margin-left: auto; padding: 0; border: 0; border-radius: 5px; background: transparent; color: #687461; cursor: pointer; }
+.browser-board-heading .forum-expand:hover, .entry-mini-board .forum-expand:hover { background: #eeeee6; color: #384332; }
+.browser-board-heading .forum-expand:focus-visible, .entry-mini-board .forum-expand:focus-visible { outline: 2px solid #8b571e; outline-offset: 2px; }
+.entry-mini-board .forum-close { margin-left: 0; }
+.browser-board[data-expanded="true"] { box-sizing: border-box; width: min(640px, 100%); }
+.entry-mini-board[data-expanded="true"] { width: min(640px, calc(100% - 20px)); }

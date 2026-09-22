@@ -1,4 +1,4 @@
-import { X } from "lucide-react"
+import { X, Maximize2, Minimize2 } from "lucide-react"
 import { LibraryBrowser } from "../actors/library/LibraryBrowser"
 import { ArtifactBrowser } from "../actors/artifacts/ArtifactBrowser"
 import { MessageTime } from "../../ui/MessageTime"
@@ -65,6 +65,7 @@ export function EntryColonyPreview({
   const toggleLibrary = useCallback(() => { setLibraryOpen(open => !open); setWorkspaceOpen(false); setBoardOpen(false) }, [])
   const toggleWorkspace = useCallback(() => { setWorkspaceOpen(open => !open); setLibraryOpen(false); setBoardOpen(false) }, [])
   const [boardOpen, setBoardOpen] = useState(true)
+  const [boardExpanded, setBoardExpanded] = useState(false)
   const toggleBoard = useCallback(() => { setBoardOpen(open => !open); setLibraryOpen(false); setWorkspaceOpen(false) }, [])
   const scrollArea = useRef<HTMLDivElement>(null)
   const followLatest = useRef(true)
@@ -167,7 +168,7 @@ export function EntryColonyPreview({
         {selected && <ResidentProfile key={selected.id} resident={selected} karma={0} messages={posts.map((post, index) => ({ ...post, body: post.text, sequence: index + 1 }))} onClose={closeProfile} />}
       {libraryOpen && <LibraryBrowser entries={[]} residents={residents} onClose={toggleLibrary} />}
       {workspaceOpen && <ArtifactBrowser files={[]} residents={residents} onClose={toggleWorkspace} />}
-      {boardOpen && !workspaceOpen && !libraryOpen && <aside className="entry-mini-board" aria-label="Preview forum">
+      {boardOpen && !workspaceOpen && !libraryOpen && <aside className="entry-mini-board" data-expanded={boardExpanded} aria-label="Preview forum">
         <header>
           {root && (
             <button
@@ -180,6 +181,9 @@ export function EntryColonyPreview({
             </button>
           )}
           <span>Forum</span>
+          <button className="forum-expand" type="button" aria-label={boardExpanded ? "Collapse forum" : "Expand forum"} title={boardExpanded ? "Collapse forum" : "Expand forum"} aria-pressed={boardExpanded} onClick={() => setBoardExpanded(value => !value)}>
+            {boardExpanded ? <Minimize2 size={16} strokeWidth={1.75} aria-hidden="true" /> : <Maximize2 size={16} strokeWidth={1.75} aria-hidden="true" />}
+          </button>
           <button className="forum-close" type="button" onClick={() => setBoardOpen(false)} aria-label="Close forum"><X size={18} strokeWidth={1.75} aria-hidden="true" /></button>
         </header>
         <div className="entry-forum-nav">

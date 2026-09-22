@@ -1,5 +1,5 @@
 import { ReviewPanel, type ReviewMission } from "./missions/ReviewPanel"
-import { ArrowUp, ArrowDown, MessageCircle, Plus, X } from "lucide-react"
+import { ArrowUp, ArrowDown, MessageCircle, Plus, X, Maximize2, Minimize2 } from "lucide-react"
 import Markdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 import { MessageTime } from "../../../ui/MessageTime"
@@ -36,6 +36,7 @@ export function ForumBoard({
   onReview?: ReviewMission | undefined
   onArtifact?: (path: string, revision?: number) => void
 }) {
+  const [expanded, setExpanded] = useState(false)
   const [thread, setThread] = useState<string>()
   const [parent, setParent] = useState<string>()
   const [creating, setCreating] = useState(false)
@@ -204,7 +205,7 @@ export function ForumBoard({
     })
   const visibleThreads = filter === "missions" ? threads.filter(message => missionById.has(message.id)) : threads
   return (
-    <aside className="browser-board" aria-label="Forum">
+    <aside className="browser-board" data-expanded={expanded} aria-label="Forum">
       <div className="browser-board-heading">
         {(thread || creating) && (
           <button
@@ -235,6 +236,9 @@ export function ForumBoard({
           }}
         >
           <Plus size={18} strokeWidth={1.75} aria-hidden="true" />
+        </button>
+        <button className="forum-expand" type="button" aria-label={expanded ? "Collapse forum" : "Expand forum"} title={expanded ? "Collapse forum" : "Expand forum"} aria-pressed={expanded} onClick={() => setExpanded(value => !value)}>
+          {expanded ? <Minimize2 size={16} strokeWidth={1.75} aria-hidden="true" /> : <Maximize2 size={16} strokeWidth={1.75} aria-hidden="true" />}
         </button>
         <button className="forum-close" type="button" onClick={onClose} aria-label="Close forum"><X size={18} strokeWidth={1.75} aria-hidden="true" /></button>
       </div>
