@@ -19,7 +19,7 @@ const MissionSchema = Schema.Struct({
   reviewFileRevision: Schema.optionalKey(Schema.Number),
   approvalsRequired: Schema.Number,
   humanReviewRequired: Schema.Boolean,
-  reviews: Schema.Array(Schema.Struct({ reviewId: Schema.String, reviewer: Schema.String, decision: Schema.Literals(["approve", "request_changes"]), reason: Schema.String, at: Schema.Number, artifactPath: Schema.String, artifactRevision: Schema.Number })),
+  reviews: Schema.Array(Schema.Struct({ reviewId: Schema.String, reviewer: Schema.String, decision: Schema.Literals(["complete", "needs_work"]), reason: Schema.String, at: Schema.Number, artifactPath: Schema.String, artifactRevision: Schema.Number })),
   requests: Schema.Array(Schema.Struct({ residentId: Schema.String, reason: Schema.String, at: Schema.Number })),
   history: Schema.Array(Schema.Struct({ at: Schema.Number, actor: Schema.String, action: Schema.String }))
 })
@@ -112,7 +112,7 @@ const mission = serviceMethod({
       Schema.Struct({ type: Schema.Literal("request_handoff"), missionId: Schema.String, reason: Schema.String }),
       Schema.Struct({ type: Schema.Literal("transfer_mission"), missionId: Schema.String, toResidentId: Schema.String }),
       Schema.Struct({ type: Schema.Literal("submit_mission"), missionId: Schema.String, filePath: Schema.String, summary: Schema.String }),
-      Schema.Struct({ type: Schema.Literal("review_mission"), missionId: Schema.String, reviewId: Schema.String, decision: Schema.Literals(["approve", "request_changes"]), reason: Schema.String }),
+      Schema.Struct({ type: Schema.Literal("vote_mission_completion"), missionId: Schema.String, reviewId: Schema.String, decision: Schema.Literals(["complete", "needs_work"]), reason: Schema.String }),
       Schema.Struct({ type: Schema.Literal("list_mission_files"), missionId: Schema.String }),
       Schema.Struct({ type: Schema.Literal("read_mission_file"), missionId: Schema.String, filePath: Schema.String }),
       Schema.Struct({ type: Schema.Literal("write_mission_file"), missionId: Schema.String, filePath: Schema.String, content: Schema.String, expectedRevision: Schema.Number })

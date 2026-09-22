@@ -195,7 +195,7 @@ export class ForumSession {
       if (!event || previous.history.length === mission.history.length) continue
       if (event.action === "review_submitted") {
         for (const resident of this.residents) if (resident.id !== mission.owner)
-          this.send(resident, `Mission ${mission.id} is ready for review. Read ${mission.artifactPath} revision ${mission.artifactRevision} with read_artifact, independently verify its requirements and sources, then use review_mission with reviewId ${mission.reviewId}. Give a specific reason. Do not vote based only on other reviewers' opinions.`)
+          this.send(resident, `Mission ${mission.id} is ready for a completion vote. Read the mission description and ${mission.artifactPath} revision ${mission.artifactRevision} with read_artifact, independently verify whether the mission requirements are fulfilled using the submission and its sources, then vote complete or needs_work using vote_mission_completion with reviewId ${mission.reviewId}. Give a specific reason. Do not vote based only on other reviewers' opinions.`)
         continue
       }
       if ((event.action.startsWith("reviewed:") || event.action === "review_invalidated" || event.action === "completed") && mission.owner && mission.owner !== event.actor) {

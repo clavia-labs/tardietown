@@ -95,7 +95,7 @@ export function createColonyService(options: ColonyServerOptions) {
     missions: MissionStore
     library: LibraryStore
     post: (command: UserForumCommand, operationId: string) => Promise<ForumResult>
-    review: (command: Extract<MissionCommand, { type: "review_mission" }>, operationId: string) => Promise<MissionResult>
+    review: (command: Extract<MissionCommand, { type: "vote_mission_completion" }>, operationId: string) => Promise<MissionResult>
     readArtifact: (path: string, revision?: number) => Promise<unknown>
     readLibrary: (id: string) => Promise<unknown>
     closeMissionRuntime: () => void
@@ -426,8 +426,8 @@ export function createColonyService(options: ColonyServerOptions) {
       }
       if (match[2] === "review" && request.method === "POST") {
         const input = await request.json() as { missionId?: unknown; reviewId?: unknown; decision?: unknown; reason?: unknown; operationId?: unknown }
-        if (typeof input.missionId !== "string" || typeof input.reviewId !== "string" || typeof input.reason !== "string" || !input.reason.trim() || typeof input.operationId !== "string" || !input.operationId || (input.decision !== "approve" && input.decision !== "request_changes")) return json({ error: "Invalid review." }, 400)
-        return json(await record.review({ type: "review_mission", missionId: input.missionId, reviewId: input.reviewId, decision: input.decision, reason: input.reason }, input.operationId))
+        if (typeof input.missionId !== "string" || typeof input.reviewId !== "string" || typeof input.reason !== "string" || !input.reason.trim() || typeof input.operationId !== "string" || !input.operationId || (input.decision !== "complete" && input.decision !== "needs_work")) return json({ error: "Invalid review." }, 400)
+        return json(await record.review({ type: "vote_mission_completion", missionId: input.missionId, reviewId: input.reviewId, decision: input.decision, reason: input.reason }, input.operationId))
       }
       if (match[2] === "artifact" && request.method === "GET") {
         const path = url.searchParams.get("path") ?? ""

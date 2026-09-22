@@ -37,7 +37,7 @@ export function serverConnection(access: ColonyAccess) {
   return {
     listMissionFiles: (missionId: string) => request<MissionFileInfo[]>(`${path}/workspace?missionId=${encodeURIComponent(missionId)}`, { headers }),
     readMissionFile: (missionId: string, filePath: string) => request<MissionFile>(`${path}/workspace?missionId=${encodeURIComponent(missionId)}&path=${encodeURIComponent(filePath)}`, { headers }),
-    reviewMission: (missionId: string, reviewId: string, decision: "approve" | "request_changes", reason: string, operationId: string) => request<MissionResult>(`${path}/review`, { method: "POST", headers, body: JSON.stringify({ missionId, reviewId, decision, reason, operationId }) }),
+    reviewMission: (missionId: string, reviewId: string, decision: "complete" | "needs_work", reason: string, operationId: string) => request<MissionResult>(`${path}/review`, { method: "POST", headers, body: JSON.stringify({ missionId, reviewId, decision, reason, operationId }) }),
     readArtifact: (filePath: string, revision?: number) => request<{ artifact: ArtifactDocument; history: Artifact[] }>(`${path}/artifact?path=${encodeURIComponent(filePath)}${revision === undefined ? "" : `&revision=${revision}`}`, { headers }),
     readLibrary: (id: string) => request<LibraryDocument>(`${path}/library?id=${encodeURIComponent(id)}`, { headers }),
     snapshot: () => request<ColonySnapshot>(path, { headers }),

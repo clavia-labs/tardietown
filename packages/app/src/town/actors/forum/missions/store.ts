@@ -6,7 +6,7 @@ import type { MemoryForum } from "../store"
 
 export interface MissionRequest { residentId: string; reason: string; at: number }
 export interface MissionHistory { at: number; actor: string; action: string }
-export interface MissionReview { reviewId: string; reviewer: string; decision: "approve" | "request_changes"; reason: string; at: number; artifactPath: string; artifactRevision: number }
+export interface MissionReview { reviewId: string; reviewer: string; decision: "complete" | "needs_work"; reason: string; at: number; artifactPath: string; artifactRevision: number }
 export interface Mission { id: string; description: string; parentMissionId?: string; status: "open" | "claimed" | "in_review" | "completed"; owner?: string; claimExpiresAt?: number; artifactPath?: string; artifactRevision?: number; reviewId?: string; reviewFilePath?: string; reviewFileRevision?: number; approvalsRequired: number; humanReviewRequired: boolean; reviews: readonly MissionReview[]; requests: readonly MissionRequest[]; history: readonly MissionHistory[] }
 export const DEFAULT_MISSION_POLICY = Object.freeze({ claimTtlMs: 5 * 60 * 1000 })
 export type MissionPolicy = typeof DEFAULT_MISSION_POLICY
@@ -18,7 +18,7 @@ export type MissionCommand =
   | { type: "transfer_mission"; missionId: string; toResidentId: string }
   | { type: "release_mission"; missionId: string }
   | { type: "submit_mission"; missionId: string; filePath: string; summary: string }
-  | { type: "review_mission"; missionId: string; reviewId: string; decision: "approve" | "request_changes"; reason: string }
+  | { type: "vote_mission_completion"; missionId: string; reviewId: string; decision: "complete" | "needs_work"; reason: string }
   | { type: "list_mission_files"; missionId: string }
   | { type: "read_mission_file"; missionId: string; filePath: string }
   | { type: "write_mission_file"; missionId: string; filePath: string; content: string; expectedRevision: number }
@@ -70,7 +70,7 @@ export class MissionStore {
   }
 
   private apply(author: string, operationId: string, command: MissionCommand): MissionResult {
-    if (!this.residents.has(author) && !(author === "user" && command.type === "review_mission" && this.residents.size === 1)) return this.fail("Unknown resident.")
+    if (!this.residents.has(author) && !(author === "user" && command.type === "vote_mission_completion" && this.residents.size === 1)) return this.fail("Unknown resident.")
     const at = this.now()
     if (command.type === "create_mission") {
       if (!command.description.trim()) return this.fail("A mission description is required.")
@@ -92,18 +92,18 @@ export class MissionStore {
       return file ? { ...this.success(mission), file } : this.fail("Workspace file not found.", mission)
     }
     if (mission.status === "completed") return this.fail("Completed missions cannot be changed.", mission)
-    if (command.type === "review_mission") {
+    if (command.type === "vote_mission_completion") {
       if (mission.status !== "in_review" || command.reviewId !== mission.reviewId) return this.fail("This review is no longer current. Read the mission again.", mission)
-      if (author === mission.owner) return this.fail("Owners cannot review their own mission.", mission)
+      if (author === mission.owner) return this.fail("Owners cannot vote on completion of their own mission.", mission)
       if (mission.humanReviewRequired !== (author === "user")) return this.fail("This mission requires a review from " + (mission.humanReviewRequired ? "the user." : "another resident."), mission)
-      if (!["approve", "request_changes"].includes(command.decision) || !command.reason.trim()) return this.fail("Choose approve or request_changes and give a reason.", mission)
+      if (!["complete", "needs_work"].includes(command.decision) || !command.reason.trim()) return this.fail("Choose complete or needs_work and give a reason tied to the mission requirements.", mission)
       if (!this.artifacts.hasRead(author, mission.artifactPath!, mission.artifactRevision!)) return this.fail("Read the exact submitted artifact revision before reviewing it.", mission)
       const previousVote = mission.reviews.findLast(vote => vote.reviewId === command.reviewId && vote.reviewer === author)
       if (previousVote?.decision === command.decision && previousVote.reason === command.reason.trim()) return this.success(mission)
       const review: MissionReview = { reviewId: command.reviewId, reviewer: author, decision: command.decision, reason: command.reason.trim(), at, artifactPath: mission.artifactPath!, artifactRevision: mission.artifactRevision! }
       const reviews = [...mission.reviews, review]
       const latest = new Map(reviews.filter(vote => vote.reviewId === mission.reviewId).map(vote => [vote.reviewer, vote]))
-      const complete = [...latest.values()].filter(vote => vote.decision === "approve").length >= mission.approvalsRequired && ![...latest.values()].some(vote => vote.decision === "request_changes")
+      const complete = [...latest.values()].filter(vote => vote.decision === "complete").length >= mission.approvalsRequired && ![...latest.values()].some(vote => vote.decision === "needs_work")
       return this.save(this.update(mission, { reviews, status: complete ? "completed" : "in_review" }, { at, actor: author, action: complete ? "completed" : `reviewed:${command.decision}` }))
     }
     if (command.type === "claim_mission") {
