@@ -1,3 +1,4 @@
+import { TownLogs } from "./logs"
 import { createForumActor, forumStateLayer } from "../src/town/actors/forum/actor"
 import type { UserForumCommand } from "../src/town/actors/forum/user"
 import { mkdirSync, writeFileSync, renameSync } from "node:fs"
@@ -36,6 +37,7 @@ import {
 } from "../src/town/protocol"
 
 export interface ColonyServerOptions {
+  dataDirectory?: string
   artifactDirectory?: string
   artifactPolicy?: Partial<ArtifactPolicy>
   missionPolicy?: Partial<MissionPolicy>
@@ -143,10 +145,15 @@ export function createColonyService(options: ColonyServerOptions) {
       const token = crypto.randomUUID()
       const config = { ...input.config }
       const residents = makeResidents(config.count, info.maxAgents)
+      const logs = options.dataDirectory ? new TownLogs(options.dataDirectory, id, {
+        id, createdAt: Date.now(), config, residents, model: info.model,
+        maxConcurrent: input.maxConcurrent, maxTurns: input.maxTurns, maxToolCalls: input.maxToolCalls
+      }) : undefined
       const palettes = shuffleDuckPalettes()
       const board = createMissionForum(config.premise)
-      const artifacts = new ArtifactStore(options.artifactPolicy, options.artifactDirectory ? (file) => {
-        const directory = join(options.artifactDirectory!, id, file.path.slice(1))
+      const artifactDirectory = options.artifactDirectory ? join(options.artifactDirectory, id) : logs ? join(logs.directory, "artifacts") : undefined
+      const artifacts = new ArtifactStore(options.artifactPolicy, artifactDirectory ? (file) => {
+        const directory = join(artifactDirectory, file.path.slice(1))
         mkdirSync(directory, { recursive: true })
         const target = join(directory, `${file.revision}.json`)
         writeFileSync(`${target}.tmp`, JSON.stringify(file), { mode: 0o600 })
@@ -162,7 +169,7 @@ export function createColonyService(options: ColonyServerOptions) {
       const library = new LibraryStore(info.libraryPolicy)
       const forumHost = await createBunHost({
         actor: createForumActor(),
-        storage: ":memory:",
+        ...(logs?.host("forum") ?? { storage: ":memory:" }),
         driver: { maxConcurrentThreads: 1 },
         layersFor: () => forumStateLayer(board, missions)
       })
@@ -178,14 +185,14 @@ export function createColonyService(options: ColonyServerOptions) {
       })
       const artifactHost = await createBunHost({
         actor: createArtifactActor(),
-        storage: ":memory:",
+        ...(logs?.host("artifacts") ?? { storage: ":memory:" }),
         driver: { maxConcurrentThreads: 1 },
         layersFor: () => artifactWorkspaceLayer(artifacts)
       })
       provisionalHosts.push(artifactHost)
       const libraryHost = await createBunHost({
         actor: createLibraryActor(),
-        storage: ":memory:",
+        ...(logs?.host("library") ?? { storage: ":memory:" }),
         driver: { maxConcurrentThreads: 1 },
         layersFor: () => libraryCollectionLayer(library)
       })
@@ -219,7 +226,7 @@ export function createColonyService(options: ColonyServerOptions) {
       )
       const host = await createBunHost({
         actor: definition,
-        storage: ":memory:",
+        ...(logs?.host("resident") ?? { storage: ":memory:" }),
         driver: { maxConcurrentThreads: input.maxConcurrent },
         layersFor: (thread) =>
           Layer.mergeAll(
@@ -295,7 +302,15 @@ export function createColonyService(options: ColonyServerOptions) {
         }
         const stopExpirySchedule = missions.subscribe(scheduleExpiry)
         scheduleExpiry()
+        const stopLogs = logs ? [
+          board.subscribe(event => logs.event(event.type, event)),
+          missions.subscribe(() => logs.event("MissionsChanged", missions.list())),
+          current.subscribe(() => logs.event("SessionChanged", current.snapshot()))
+        ] : []
+        logs?.event("TownCreated", { messages: board.snapshot(), missions: missions.list() })
         const closeMissionRuntime = () => {
+          stopLogs.forEach(stop => stop())
+          logs?.event("TownClosed", current.snapshot())
           stopExpirySchedule()
           if (expiryTimer !== undefined) clearTimeout(expiryTimer)
         }

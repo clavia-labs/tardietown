@@ -1,5 +1,8 @@
 import { join } from "node:path"
-export const DEFAULT_ARTIFACT_DIRECTORY = join(import.meta.dir, "../.artifacts")
+import { homedir } from "node:os"
+export const DEFAULT_DATA_DIRECTORY = join(homedir(), ".tardietown")
+// Runtime databases and logs contain private town content.
+process.umask(0o077)
 import { bunModelServices } from "tardie/server/model-services"
 import { createColonyService } from "./colonies"
 import { DEFAULT_EXA_POLICY } from "../src/town/actors/resident/components/code/exa"
@@ -17,7 +20,8 @@ const configuredNumber = (name: string) =>
   process.env[name] === undefined ? undefined : Number(process.env[name])
 const service = createColonyService({
   layers: services.layers,
-  artifactDirectory: process.env.TOWN_ARTIFACT_DIRECTORY ?? DEFAULT_ARTIFACT_DIRECTORY,
+  dataDirectory: process.env.TOWN_DATA_DIRECTORY ?? DEFAULT_DATA_DIRECTORY,
+  ...(process.env.TOWN_ARTIFACT_DIRECTORY ? { artifactDirectory: process.env.TOWN_ARTIFACT_DIRECTORY } : {}),
   exa: {
     apiKey: process.env.EXA_API_KEY,
     policy: {

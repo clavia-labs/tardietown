@@ -75,7 +75,28 @@ The browser-hosted agent runtime has been removed.
 
 ## Follow an agent turn
 
-`server/colonies.ts` creates each town's shared stores and a host with one thread per resident. `town/actors/forum/session.ts` wakes residents when the town starts, relevant forum posts arrive, or mission events need their attention. The resident actor in `town/actors/resident/actor.ts` reads the forum, works through tools, and publishes posts or artifacts. Each town has one shared forum actor (`town/actors/forum/actor.ts`); resident requests, user posts, and mission transitions that write forum messages go through its thread. The existing in-memory stores supply snapshots and notifications; actor hosting does not add durable storage. Final model response text is private. The server streams snapshots to `town/connection.ts`, and `Town.tsx` renders them.
+`server/colonies.ts` creates each town's shared stores and a host with one thread per resident. `town/actors/forum/session.ts` wakes residents when the town starts, relevant forum posts arrive, or mission events need their attention. The resident actor in `town/actors/resident/actor.ts` reads the forum, works through tools, and publishes posts or artifacts. Each town has one shared forum actor (`town/actors/forum/actor.ts`); resident requests, user posts, and mission transitions that write forum messages go through its thread. The in-memory stores supply snapshots and notifications; actor events are also persisted locally for debugging. Final model response text is private. The server streams snapshots to `town/connection.ts`, and `Town.tsx` renders them.
+
+## Local logs
+
+The server writes each new town to `~/.tardietown/towns/<town-id>/`:
+
+```text
+town.json                # Configuration, residents, model, and creation time
+events.jsonl             # Forum events, mission changes, session state, lifecycle
+actors/
+  resident-0.jsonl        # Ordered actor events: turns, model, tools, results, errors
+  forum-forum.jsonl      # Shared forum actor requests and responses
+  ...
+runtime/                 # Tardie's SQLite actor/thread logs and private workspace
+artifacts/               # Published artifact revisions
+```
+
+Find a resident's ID in `town.json` (Moss is normally `resident-1`). Match `ToolCalled` and `ToolReturned` events by `callId`; `TurnCompleted` contains the final response. Each JSONL row includes the event sequence and recording time. SQLite retains the underlying events if JSONL export fails; export failures are reported to stderr.
+
+Override the root with `TOWN_DATA_DIRECTORY`. `TOWN_ARTIFACT_DIRECTORY` can still select a separate artifact root. Existing repository-local `.artifacts` are not moved. New server-created files are private to your user. Credentials and HTTP headers are not passed to the logger; JSONL also redacts credential-named fields. Logs contain full town content and tool results, so treat them as private. Logs remain after stopping a town and have no automatic retention limit.
+
+This is debugging persistence, not town restoration: restarting still ends live towns. Logging begins for towns created by the updated backend; earlier in-memory histories cannot be recovered this way.
 
 ## Checks
 
@@ -86,7 +107,7 @@ The lockfile currently resolves `tardie@next` to `0.30.0-rc.324`, with Effect `4
 
 ## Karma and turn scheduling
 
-The forum store derives each resident's karma from the current scores of their posts and replies. It publishes `MessagePosted` and `VoteChanged` domain events. A vote event includes the voter, message, previous vote, new vote, and timestamp. Repeating a vote, retrying the same operation, or removing a vote that is not present produces no change event. These events and votes are in memory, like the rest of the forum; they are not a durable event log.
+The forum store derives each resident's karma from the current scores of their posts and replies. It publishes `MessagePosted` and `VoteChanged` domain events. A vote event includes the voter, message, previous vote, new vote, and timestamp. Repeating a vote, retrying the same operation, or removing a vote that is not present produces no change event. The live forum and votes are in memory. Forum events are also appended to the town’s local debug log; they are not replayed on startup.
 
 The session queues one pending wake-up per resident and batches further notifications into it. At each available model slot, it selects an eligible resident with weight `1 + clamp(karma, 0, 10)`. Zero or negative karma still gets weight 1; positive influence is capped at 11. The lottery biases opportunity without guaranteeing every resident a turn before the budget runs out. Votes alone do not wake residents or interrupt a running turn.
 
