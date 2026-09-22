@@ -293,7 +293,7 @@
 
 .workspace-browser nav > .workspace-published { margin-left: auto; }
 .forum-mission-status-in_review { background: #eee3c9; color: #806329; }
-.mission-review { border-top: 1px solid #e3e5db; padding-top: 8px; }
+.mission-review { display: grid; gap: 6px; width: fit-content; max-width: min(100%, 560px); box-sizing: border-box; padding: 8px 10px; border: 1px solid #e3e5db; border-radius: 7px; background: #f2f3ec; }
 .mission-review p { margin: 0 0 8px; font: 11px/1.5 var(--brand); overflow-wrap: anywhere; }
 .mission-review summary { cursor: pointer; }
 .mission-review-controls label { display: grid; gap: 6px; }
@@ -427,3 +427,9 @@
 .town-budget-form p { font: 11px/1.4 var(--brand); }
 .town-budget-form button + button { margin-left: 6px; }
 @media (max-width: 600px) { .browser-colony > header { flex-wrap: wrap; } .browser-colony > header .town-budget { margin-left: auto; } }
+
+.mission-review .forum-submission-link { padding: 0; background: transparent; }
+.mission-review-votes > summary { color: #687461; font: 500 11px/1.5 var(--brand); }
+.mission-review-votes[open] > summary { margin-bottom: 8px; }
+.mission-review-votes p:last-child { margin-bottom: 0; }
+.mission-review summary:focus-visible { outline: 2px solid #8b571e; outline-offset: 2px; border-radius: 3px; }

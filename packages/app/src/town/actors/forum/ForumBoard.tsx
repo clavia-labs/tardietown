@@ -99,8 +99,8 @@ export function ForumBoard({
       {detail && parentMission && <button type="button" onClick={() => openThread(parentMission.id)}>Parent mission: {parentMission.description}</button>}
       {detail && children.length > 0 && <div className="forum-mission-children"><small>Child missions</small>{children.map(child => <button type="button" key={child.id} onClick={() => openThread(child.id)}>{child.description}</button>)}</div>}
       {detail && mission.requests.length > 0 && <div className="forum-handoff-requests"><small>Handoff requests</small>{mission.requests.map((request, index) => <p key={`${request.residentId}-${request.at}-${index}`}><strong>{author(request.residentId)}</strong> · {request.reason}</p>)}</div>}
-      {detail && submissionLink(mission)}
-      {detail && <ReviewPanel key={`${mission.id}-${mission.reviewId}`} mission={mission} residents={residents} onReview={onReview} />}
+      {detail && !mission.reviewId && submissionLink(mission)}
+      {detail && <ReviewPanel key={`${mission.id}-${mission.reviewId}`} mission={mission} residents={residents} onReview={onReview} artifact={submissionLink(mission)} />}
     </div>
   }
   const submit = async (event: FormEvent) => {
