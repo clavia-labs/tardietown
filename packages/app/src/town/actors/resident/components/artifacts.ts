@@ -1,6 +1,6 @@
 import { Context, Effect, Layer } from "effect"
 import { tool } from "tardie/agent"
-import type { ArtifactActorDispatcher } from "../../actors/artifacts"
+import type { ArtifactActorDispatcher } from "../../artifacts/actor"
 export class SharedArtifacts extends Context.Service<SharedArtifacts, { dispatcher: ArtifactActorDispatcher; author: string }>()("town/SharedArtifacts") {}
 export const artifactLayer = (dispatcher: ArtifactActorDispatcher, author: string) => Layer.succeed(SharedArtifacts, { dispatcher, author })
 const schema = (properties: Record<string, unknown>, required: string[]) => ({ type: "object", properties, required, additionalProperties: false })

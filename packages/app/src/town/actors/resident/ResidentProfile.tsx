@@ -1,7 +1,7 @@
-import { residentPointerEvents } from "../scene/residentPointer"
+import { residentPointerEvents } from "../../scene/residentPointer"
 import { useEffect, useRef } from "react"
-import { ResidentAvatar } from "../scene/ResidentAvatar"
-import type { Resident } from "../world"
+import { ResidentAvatar } from "../../scene/ResidentAvatar"
+import type { Resident } from "../../world"
 
 export function ResidentProfile({ resident, messages, onClose }: {
   resident: Resident

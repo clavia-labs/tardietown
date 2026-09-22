@@ -1,7 +1,7 @@
 import { Effect } from "effect"
-import type { ArtifactStore } from "../artifacts/store"
-import type { ForumCommand, ForumMessage, ForumResult } from "../../agent/components/forum"
-import type { MemoryForum } from "../../forum/store"
+import type { ArtifactStore } from "../../actors/artifacts/store"
+import type { ForumCommand, ForumMessage, ForumResult } from "../../actors/resident/components/forum"
+import type { MemoryForum } from "../../actors/forum/store"
 
 export interface MissionRequest { residentId: string; reason: string; at: number }
 export interface MissionHistory { at: number; actor: string; action: string }

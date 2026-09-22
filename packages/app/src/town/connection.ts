@@ -1,12 +1,12 @@
-import type { Artifact, ArtifactDocument } from "./workspace/artifacts/store"
+import type { Artifact, ArtifactDocument } from "./actors/artifacts/store"
 import type {
   ColonySnapshot,
   ServerColonyOptions,
   ColonyServerInfo
 } from "./protocol"
-import type { ForumResult } from "./agent/components/forum"
-import type { UserForumCommand } from "./forum/user"
-import type { LibraryDocument } from "./library/store"
+import type { ForumResult } from "./actors/resident/components/forum"
+import type { UserForumCommand } from "./actors/forum/user"
+import type { LibraryDocument } from "./actors/library/store"
 
 export interface ColonyAccess {
   id: string

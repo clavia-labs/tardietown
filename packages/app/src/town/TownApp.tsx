@@ -8,8 +8,8 @@ import {
   DEFAULT_MESSAGES_PER_AGENT,
   type WorldConfig
 } from "./world"
-import { DEFAULT_FORUM_CONCURRENCY } from "./forum/session"
-import { DEFAULT_FORUM_TOOL_LIMIT } from "./agent/policy"
+import { DEFAULT_FORUM_CONCURRENCY } from "./actors/forum/session"
+import { DEFAULT_FORUM_TOOL_LIMIT } from "./actors/resident/policy"
 import {
   createServerColony,
   serverConnection,

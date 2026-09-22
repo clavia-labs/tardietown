@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import type { LibraryEntry, LibraryDocument } from "./store"
-import type { Resident } from "../world"
+import type { Resident } from "../../world"
 
 export type ReadLibrary = (id: string) => Promise<LibraryDocument>
 

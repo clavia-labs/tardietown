@@ -1,7 +1,7 @@
 import { Context, Effect, Layer, Schema } from "effect"
 import { actor } from "tardie/core"
-import { serviceMethod } from "./serviceMethod"
-import { LibraryStore, type LibraryPolicy } from "../library/store"
+import { serviceMethod } from "../serviceMethod"
+import { LibraryStore, type LibraryPolicy } from "./store"
 
 export type LibraryRequest =
   | { readonly kind: "list"; readonly author: string; readonly operationId: string; readonly limit: number }

@@ -1,10 +1,10 @@
-import type { Artifact } from "./workspace/artifacts/store"
-import type { ForumMessage, ForumPolicy } from "./agent/components/forum"
-import type { ForumSessionState } from "./forum/session"
+import type { Artifact } from "./actors/artifacts/store"
+import type { ForumMessage, ForumPolicy } from "./actors/resident/components/forum"
+import type { ForumSessionState } from "./actors/forum/session"
 import type { shuffleDuckPalettes } from "./scene/duckPalettes"
 import type { Resident, WorldConfig } from "./world"
 import type { Mission, MissionPolicy } from "./workspace/missions/store"
-import type { LibraryEntry, LibraryPolicy } from "./library/store"
+import type { LibraryEntry, LibraryPolicy } from "./actors/library/store"
 
 export const DEFAULT_COLONY_SERVER_PORT = 4244
 export const DEFAULT_SERVER_TURN_TIMEOUT_MS = 300000

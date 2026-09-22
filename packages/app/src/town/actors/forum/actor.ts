@@ -1,9 +1,9 @@
 import { Context, Effect, Layer, Schema } from "effect"
 import { actor } from "tardie/core"
-import { serviceMethod } from "./serviceMethod"
-import { MemoryForum } from "../forum/store"
-import { submitUserPost } from "../forum/user"
-import { MissionStore } from "../workspace/missions/store"
+import { serviceMethod } from "../serviceMethod"
+import { MemoryForum } from "./store"
+import { submitUserPost } from "./user"
+import { MissionStore } from "../../workspace/missions/store"
 
 const MissionSchema = Schema.Struct({
   id: Schema.String,

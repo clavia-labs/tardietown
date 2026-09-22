@@ -1,7 +1,7 @@
 import { Context, Effect, Layer, Schema } from "effect"
 import { actor } from "tardie/core"
-import { serviceMethod } from "./serviceMethod"
-import { ArtifactStore, type ArtifactPolicy } from "../workspace/artifacts/store"
+import { serviceMethod } from "../serviceMethod"
+import { ArtifactStore, type ArtifactPolicy } from "./store"
 
 export type ArtifactRequest =
   | { readonly kind: "list"; readonly author: string; readonly operationId: string }

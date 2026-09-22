@@ -6,7 +6,7 @@ import {
   type ForumPolicy,
   type ForumResult,
   type ForumService
-} from "../agent/components/forum"
+} from "../resident/components/forum"
 
 export const DEFAULT_FORUM_POLICY: ForumPolicy = Object.freeze({
   pageSize: 20,
@@ -18,7 +18,7 @@ export const DEFAULT_FORUM_POLICY: ForumPolicy = Object.freeze({
 
 // MemoryForum retains public messages and author-private read state for one in-memory forum.
 export class MemoryForum {
-  private missionResolver: ((messageId: string) => import("../workspace/missions/store").Mission | undefined) | undefined
+  private missionResolver: ((messageId: string) => import("../../workspace/missions/store").Mission | undefined) | undefined
   private readonly votes = new Map<string, Map<string, number>>()
   private readonly changes = new Set<() => void>()
   subscribeChanges = (listener: () => void) => {
@@ -38,7 +38,7 @@ export class MemoryForum {
     }
   }
   version = () => this.revision
-  registerMissionResolver(resolver: (messageId: string) => import("../workspace/missions/store").Mission | undefined) {
+  registerMissionResolver(resolver: (messageId: string) => import("../../workspace/missions/store").Mission | undefined) {
     this.missionResolver = resolver
     return () => { if (this.missionResolver === resolver) this.missionResolver = undefined }
   }
