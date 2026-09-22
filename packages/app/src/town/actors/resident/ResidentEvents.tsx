@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react"
 import { MessageTime } from "../../../ui/MessageTime"
 import type { ReadResidentEvents, ResidentEvent } from "./events"
-export function ResidentEvents({ resident, read }: { resident: string; read: ReadResidentEvents }) {
+export function ResidentEvents({ resident, read, onCount }: { resident: string; read: ReadResidentEvents; onCount: (count: number, hasMore: boolean) => void }) {
   const [events, setEvents] = useState<ResidentEvent[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string>()
   const [more, setMore] = useState(false)
+  const count = useRef(0)
   const cursor = useRef(0)
   const alive = useRef(false)
   const busy = useRef(false)
@@ -16,6 +17,8 @@ export function ResidentEvents({ resident, read }: { resident: string; read: Rea
       const page = await read(resident, cursor.current)
       if (!alive.current) return
       cursor.current = page.cursor
+      count.current += page.events.length
+      onCount(count.current, page.hasMore)
       setEvents(previous => [...previous, ...page.events]); setMore(page.hasMore)
     } catch { if (alive.current) setError("Could not load events. Try again.") }
     finally { busy.current = false; if (alive.current) setLoading(false) }

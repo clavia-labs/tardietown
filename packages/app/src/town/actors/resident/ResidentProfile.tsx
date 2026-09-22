@@ -4,7 +4,7 @@ import { X as PanelClose } from "lucide-react"
 import { MessageTime } from "../../../ui/MessageTime"
 import type { ForumMessage } from "./components/forum"
 import { residentPointerEvents } from "../../scene/residentPointer"
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 import { ResidentAvatar } from "../../scene/ResidentAvatar"
 import type { Resident } from "../../world"
 
@@ -16,6 +16,8 @@ export function ResidentProfile({ resident, messages, karma, onClose, readEvents
   onClose: () => void
 }) {
   const [tab, setTab] = useState<"posts" | "replies" | "events">("posts")
+  const [eventCount, setEventCount] = useState<{ count: number; more: boolean }>()
+  const receiveCount = useCallback((count: number, more: boolean) => setEventCount({ count, more }), [])
   const card = useRef<HTMLElement>(null)
   const close = useRef<HTMLButtonElement>(null)
   useEffect(() => {
@@ -49,10 +51,10 @@ export function ResidentProfile({ resident, messages, karma, onClose, readEvents
       <div className="resident-activity-tabs" role="group" aria-label="Resident activity">
         <button type="button" aria-pressed={tab === "posts"} onClick={() => setTab("posts")}>Posts · {contributions.filter(message => !message.parentId).length}</button>
         <button type="button" aria-pressed={tab === "replies"} onClick={() => setTab("replies")}>Replies · {contributions.filter(message => message.parentId).length}</button>
-        {readEvents && <button type="button" aria-pressed={tab === "events"} onClick={() => setTab("events")}>Events</button>}
+        {readEvents && <button type="button" aria-pressed={tab === "events"} onClick={() => setTab("events")}>Events{eventCount ? ` · ${eventCount.count}${eventCount.more ? "+" : ""}` : ""}</button>}
       </div>
       <div className="resident-activity" tabIndex={0} aria-label={`${resident.name}'s ${tab}`}>
-        {tab === "events" && readEvents ? <ResidentEvents key={resident.id} resident={resident.id} read={readEvents} /> : activity.length ? activity.map(message => {
+        {tab === "events" && readEvents ? <ResidentEvents key={resident.id} resident={resident.id} read={readEvents} onCount={receiveCount} /> : activity.length ? activity.map(message => {
           const thread = messages.find(entry => entry.id === message.threadId)
           return <article key={message.id}>
             <header><span>{message.parentId ? "Replied" : "Posted"}</span><MessageTime at={message.at} /></header>
