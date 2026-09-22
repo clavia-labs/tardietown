@@ -488,3 +488,12 @@
   scrollbar-width: thin;
   scrollbar-color: #adb3a5 transparent;
 }
+
+.browser-colony-content > .resident-profile {
+  top: 15%;
+  left: clamp(0px, 12%, max(0px, calc(100% - 320px)));
+  max-height: min(520px, 85%);
+}
+@media (max-width: 600px) {
+  .browser-colony-content > .resident-profile { top: 8%; left: 0; max-height: 92%; }
+}
