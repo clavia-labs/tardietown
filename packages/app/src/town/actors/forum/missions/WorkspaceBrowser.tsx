@@ -31,7 +31,7 @@ function MissionFolder({ mission, missions, reader, onFile, onPublished }: Folde
     return () => { cancelled = true }
   }, [open, reader, mission.id, mission.history.length])
   return <li><details open={open} onToggle={event => { if (event.target === event.currentTarget) setOpen(event.currentTarget.open) }}>
-    <summary title={mission.description}><ChevronRight className="file-tree-chevron" size={13} aria-hidden="true" /><Folder size={15} aria-hidden="true" /><span>{mission.description}</span><small>{mission.status.replaceAll("_", " ")}</small></summary>
+    <summary title={mission.description}><ChevronRight className="file-tree-chevron" size={13} aria-hidden="true" /><Folder size={15} aria-hidden="true" /><span>{mission.description}</span><span className="workspace-mission-flairs"><span className="forum-mission-kind">{mission.parentMissionId ? "Child mission" : "Town mission"}</span><span className={`forum-mission-status forum-mission-status-${mission.status}`}>{mission.status.replaceAll("_", " ")}</span></span></summary>
     <div className="mission-folder-content">
       {error ? <p role="alert">{error}</p> : loading && !files.length ? <p role="status">Loading files…</p> : null}
       <FileTree files={files} submittedPath={mission.reviewFilePath} onOpen={path => onFile(mission, path)} published={mission.artifactPath ? { path: mission.artifactPath, revision: mission.artifactRevision, onOpen: () => onPublished({ path: mission.artifactPath!, revision: mission.artifactRevision }) } : undefined} />
