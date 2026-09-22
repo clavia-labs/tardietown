@@ -475,3 +475,16 @@
 .workspace-file-tree .workspace-mission-flairs > span { overflow: visible; font-size: 9px; padding: 2px 6px; }
 .workspace-file-tree summary:has(> .workspace-mission-flairs) { flex-wrap: wrap; }
 .workspace-file-tree summary > span:not(.workspace-mission-flairs) { flex: 1; min-width: 80px; }
+
+/* Extend the scroll surface to the panel edge without moving its text. */
+.workspace-browser { overflow: hidden; }
+.workspace-browser > .artifact-document,
+.workspace-browser > .artifact-files {
+  margin-right: -20px;
+  margin-bottom: -20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #adb3a5 transparent;
+}
