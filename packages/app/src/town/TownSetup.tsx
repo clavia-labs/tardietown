@@ -70,8 +70,8 @@ export function TownSetup({
       <form className="entry-name-form" onSubmit={submit}>
         <input
           id="swarm-name"
-          aria-label="Town name (optional)"
-          placeholder={`${suggestedName} (optional)`}
+          aria-label="Town name"
+          placeholder={suggestedName}
           value={name}
           onChange={(event) => setName(event.target.value)}
           autoComplete="off"
