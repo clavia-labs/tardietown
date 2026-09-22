@@ -53,7 +53,7 @@ export function TownApp() {
       },
       () =>
         setError(
-          "Colony server unavailable. Start it with bun run dev:colony-server."
+          "Town server unavailable. Start it with bun run dev:server."
         )
     )
   }, [])
@@ -105,7 +105,7 @@ export function TownApp() {
             history.replaceState(null, "", url)
           }}
         >
-          Resume colony
+          Resume town
         </button>
       )}
       <TownSetup
@@ -123,10 +123,10 @@ export function TownApp() {
             aria-modal="true"
             aria-labelledby="server-connect-title"
           >
-            <h2 id="server-connect-title">Let the colony settle in</h2>
+            <h2 id="server-connect-title">Start your town</h2>
             <p>
               The server runs your residents and keeps their forum open when you
-              close this tab. Colonies last until the server stops.
+              close this tab. Towns last until the server stops.
             </p>
             <p>
               Model: {info?.model ?? "Connecting…"}. Provider keys stay on the
@@ -200,7 +200,7 @@ export function TownApp() {
                   Back
                 </button>
                 <button type="submit" disabled={!info || starting}>
-                  {starting ? "Starting…" : "Start colony"}
+                  {starting ? "Starting…" : "Start town"}
                 </button>
               </div>
             </form>
@@ -222,7 +222,6 @@ function ServerColony({
   const receiveSnapshot = useCallback((next: ColonySnapshot) => setSnapshot((previous) => reconcileColonySnapshot(previous, next)), [])
   const [error, setError] = useState<string>()
   const [reconnect, setReconnect] = useState(0)
-  const [stopping, setStopping] = useState(false)
   useEffect(() => {
     const abort = new AbortController()
     setError(undefined)
@@ -232,32 +231,13 @@ function ServerColony({
     })
     return () => abort.abort()
   }, [connection, reconnect, receiveSnapshot])
-  const stop = async () => {
-    setStopping(true)
-    try {
-      await connection.stop()
-      sessionStorage.removeItem(accessKey(access.id))
-      onLeave()
-    } catch (cause) {
-      setError(String(cause))
-      setStopping(false)
-    }
-  }
-  const controls = (
+  const controls = error && (
     <div className="server-colony-controls">
       {error && (
         <button onClick={() => setReconnect((value) => value + 1)}>
           Reconnect
         </button>
       )}
-      <button
-        onClick={() => {
-          void stop()
-        }}
-        disabled={stopping}
-      >
-        {stopping ? "Stopping…" : "Stop colony"}
-      </button>
     </div>
   )
   return (
@@ -292,7 +272,7 @@ function ServerColony({
         />
       ) : (
         <div className="server-loading">
-          {error ? <p role="alert">{error}</p> : "Connecting to your colony…"}{" "}
+          {error ? <p role="alert">{error}</p> : "Connecting to your town…"}{" "}
           <button onClick={onLeave}>Back</button>
           {controls}
         </div>

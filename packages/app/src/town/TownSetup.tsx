@@ -89,7 +89,7 @@ export function TownSetup({
           />
           <button
             type="submit"
-            aria-label="Create colony"
+            aria-label="Start town"
             disabled={!mission.trim()}
           >
             <ArrowRight size={22} strokeWidth={1.5} />
@@ -120,7 +120,7 @@ export function TownSetup({
       </form>
       <section
         className="entry-land"
-        aria-label={`Your colony with ${count} agents`}
+        aria-label={`Your town with ${count} residents`}
       >
         <EntryColonyPreview residents={residents} />
       </section>

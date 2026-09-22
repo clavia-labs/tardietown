@@ -18,7 +18,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(path, init)
   const body = await response.json()
   if (!response.ok)
-    throw new Error(body.error ?? `Colony server returned ${response.status}`)
+    throw new Error(body.error ?? `Town server returned ${response.status}`)
   return body as T
 }
 export const serverInfo = () => request<ColonyServerInfo>("/api/colony-config")
@@ -59,7 +59,7 @@ export function serverConnection(access: ColonyAccess) {
       const response = await fetch(`${path}/events`, { headers, signal })
       if (!response.ok || !response.body)
         throw new Error(
-          "Could not connect to the colony. Reconnect to try again."
+          "Could not connect to the town. Reconnect to try again."
         )
       const reader = response.body.getReader()
       const decoder = new TextDecoder()
@@ -79,7 +79,7 @@ export function serverConnection(access: ColonyAccess) {
         }
         if (!signal.aborted)
           throw new Error(
-            "Colony connection closed. Reconnect to see its current state."
+            "Town connection closed. Reconnect to see its current state."
           )
       } finally {
         await reader.cancel().catch(() => undefined)
