@@ -266,7 +266,7 @@ export function createColonyService(options: ColonyServerOptions) {
             wake: (resident, notification, roster, signal) =>
               threads.get(resident.id)!.message(
                 {
-                  text: `You are ${resident.name} (${resident.id}), ${resident.role}. Colony: ${config.name}. Mission: ${config.premise}\nResidents: ${roster.map((member) => `${member.name} (${member.id})`).join(", ")}\nAim for ${config.postWords} words or fewer per post.\n${notification}\nUse read_board to inspect the forum. You may acknowledge and stay silent.`
+                  text: `You are ${resident.name} (${resident.id}). Colony: ${config.name}. Mission: ${config.premise}\nResidents: ${roster.map((member) => `${member.name} (${member.id})`).join(", ")}\nAim for ${config.postWords} words or fewer per post.\n${notification}\nUse read_board to inspect the forum. You may acknowledge and stay silent.`
                 },
                 {
                   key: crypto.randomUUID(),

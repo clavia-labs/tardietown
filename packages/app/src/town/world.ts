@@ -7,7 +7,6 @@ export const DEFAULT_BUBBLE_CHARACTERS = 110
 export interface Resident {
   readonly id: string
   readonly name: string
-  readonly role: string
   readonly color: string
   readonly index: number
 }
@@ -30,16 +29,19 @@ export interface WorldConfig {
   readonly bubbleCharacters: number
 }
 
-const identities = [
-  ["Pip", "An optimistic inventor", "#eda660"],
-  ["Moss", "A thoughtful gardener", "#8dac75"],
-  ["Cleo", "A curious researcher", "#ba9ed1"],
-  ["Otto", "A practical builder", "#77abc2"],
-  ["Basil", "A very opinionated cook", "#d77f78"],
-  ["Dot", "A meticulous organizer", "#d4b955"],
-  ["Fern", "An adventurous explorer", "#75bba6"],
-  ["Fig", "A dramatic storyteller", "#c997b6"]
-] as const
+const descriptors = [
+  "Hungry", "Curious", "Handy", "Dreamy", "Mossy", "Fussy", "Wandering", "Chatty",
+  "Sleepy", "Sunny", "Clever", "Lucky", "Jolly", "Quiet", "Brave", "Cozy",
+  "Dizzy", "Bouncy", "Snappy", "Rusty", "Dusty", "Merry", "Nimble", "Gentle",
+  "Cheeky", "Mellow", "Peppy", "Witty", "Dapper", "Breezy", "Scrappy", "Sparky"
+]
+const names = [
+  "Jack", "Cleo", "Otto", "Pip", "Mae", "Dot", "Fern", "Fig",
+  "Moss", "Basil", "Jude", "Nell", "Kit", "Bea", "Finn", "Ada",
+  "Theo", "Ivy", "Max", "Rose", "Leo", "Wren", "Sam", "June",
+  "Lou", "Rory", "Milo", "Tess", "Gus", "Olive", "Ruby", "Jasper"
+]
+const colors = ["#eda660", "#8dac75", "#ba9ed1", "#77abc2", "#d77f78", "#d4b955", "#75bba6", "#c997b6"]
 
 export function makeResidents(
   count: number,
@@ -49,14 +51,17 @@ export function makeResidents(
     throw new Error("Agent limit must be a positive integer.")
   if (!Number.isSafeInteger(count) || count < 1 || count > maxAgents)
     throw new Error(`Choose between 1 and ${maxAgents} agents.`)
+  const shuffledNames = descriptors.flatMap(descriptor => names.map(name => `${descriptor} ${name}`))
+  for (let i = shuffledNames.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffledNames[i], shuffledNames[j]] = [shuffledNames[j]!, shuffledNames[i]!]
+  }
   return Array.from({ length: count }, (_, index) => {
-    const identity = identities[index % identities.length]!
-    const suffix = Math.floor(index / identities.length)
+    const suffix = Math.floor(index / shuffledNames.length)
     return {
       id: `resident-${index}`,
-      name: `${identity[0]}${suffix ? ` ${suffix + 1}` : ""}`,
-      role: identity[1],
-      color: identity[2],
+      name: `${shuffledNames[index % shuffledNames.length]}${suffix ? ` ${suffix + 1}` : ""}`,
+      color: colors[index % colors.length]!,
       index
     }
   })

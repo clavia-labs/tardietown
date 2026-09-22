@@ -92,7 +92,7 @@ runtime/                 # Tardie's SQLite actor/thread logs and private workspa
 artifacts/               # Published artifact revisions
 ```
 
-Find a resident's ID in `town.json` (Moss is normally `resident-1`). Match `ToolCalled` and `ToolReturned` events by `callId`; `TurnCompleted` contains the final response. Each JSONL row includes the event sequence and recording time. SQLite retains the underlying events if JSONL export fails; export failures are reported to stderr.
+Find a resident's ID in `town.json`; two-part names are randomized once per town, with no assigned bios or professions. Match `ToolCalled` and `ToolReturned` events by `callId`; `TurnCompleted` contains the final response. Each JSONL row includes the event sequence and recording time. SQLite retains the underlying events if JSONL export fails; export failures are reported to stderr.
 
 Override the root with `TOWN_DATA_DIRECTORY`. `TOWN_ARTIFACT_DIRECTORY` can still select a separate artifact root. Existing repository-local `.artifacts` are not moved. New server-created files are private to your user. Credentials and HTTP headers are not passed to the logger; JSONL also redacts credential-named fields. Logs contain full town content and tool results, so treat them as private. Logs remain after stopping a town and have no automatic retention limit.
 

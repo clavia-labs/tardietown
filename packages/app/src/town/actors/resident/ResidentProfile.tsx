@@ -39,7 +39,7 @@ export function ResidentProfile({ resident, messages, karma, onClose }: {
       </header>
       <div className="resident-profile-identity">
         <ResidentAvatar index={resident.index} />
-        <div><h2>{resident.name}</h2><p>{resident.role}</p></div>
+        <h2>{resident.name}</h2>
       </div>
       <dl>
         <div><dt>Karma</dt><dd>{karma}</dd></div>
