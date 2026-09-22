@@ -183,7 +183,7 @@ export function ColonyPreview({
     town.add(shelf)
     const toolbox = new THREE.Group()
     toolbox.name = "packageToolbox"
-    toolbox.position.set(96, 0, 96)
+    toolbox.position.set(worldSize / 2 - 24, 0, -worldSize / 2 + 24)
     box(toolbox, [30, 17, 22], [0, 9, 0], "#718578")
     box(toolbox, [32, 4, 24], [0, 19, 0], "#536b60")
     box(toolbox, [15, 3, 4], [0, 27, 0], "#46584d")
