@@ -266,3 +266,30 @@
 .forum-vote-score[data-positive="true"] { background: #f5e6d7; color: #a65d24; }
 .forum-vote-score[data-negative="true"] { background: #e4e8ee; color: #566b88; }
 .forum-reply-count, .browser-colony .forum-post-actions .forum-reply { display: inline-flex; align-items: center; gap: 5px; margin: 0; padding: 4px 0; color: #77816f; font: 11px/1.4 var(--brand); }
+
+.workspace-browser { gap: 12px; padding: 20px; background: #faf9f5; box-shadow: 0 8px 28px #28362912; }
+.workspace-browser header h2 { font: 500 16px/1.4 var(--brand); }
+.workspace-browser header > button { border: 0; background: transparent; padding: 2px 6px; color: #77816f; font-size: 22px; }
+.workspace-browser nav { gap: 10px; padding-bottom: 12px; border-bottom: 1px solid #e3e5db; flex-wrap: nowrap; }
+.workspace-browser nav > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #77816f; font: 12px/1.5 var(--brand); }
+.workspace-browser nav > button { flex-shrink: 0; padding: 4px 0; border: 0; background: transparent; font: 12px/1.5 var(--brand); }
+.workspace-browser nav > button:disabled { display: none; }
+.workspace-document-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.workspace-browser .artifact-meta { font: 11px/1.5 var(--brand); }
+.workspace-options { position: relative; }
+.workspace-options > summary { cursor: pointer; list-style: none; padding: 4px 8px; border-radius: 5px; color: #77816f; letter-spacing: 2px; }
+.workspace-options > summary::-webkit-details-marker { display: none; }
+.workspace-options > summary:hover, .workspace-options[open] > summary { background: #eeeee6; }
+.workspace-options > summary:focus-visible { outline: 2px solid #8b571e; outline-offset: 2px; }
+.workspace-options-panel { position: absolute; right: 0; top: 100%; z-index: 2; width: min(260px, 65vw); padding: 12px; border: 1px solid #d5d8c8; border-radius: 8px; background: #faf9f5; box-shadow: 0 6px 20px #28362918; }
+.workspace-options-panel .artifact-actions { gap: 8px; }
+.workspace-options-panel .artifact-meta { margin-top: 12px; }
+.workspace-browser .artifact-document { color: #384332; font: 14px/1.7 var(--brand); padding-bottom: 24px; }
+.workspace-browser .artifact-document h1 { margin: 4px 0 16px; text-align: left; font: 600 24px/1.3 var(--brand); letter-spacing: -.02em; }
+.workspace-browser .artifact-document h2 { margin: 24px 0 10px; font: 600 18px/1.4 var(--brand); }
+.workspace-browser .artifact-document h3 { margin: 20px 0 8px; font: 600 15px/1.4 var(--brand); }
+.workspace-browser .artifact-document p { margin: 0 0 16px; }
+.workspace-browser .artifact-document ul, .workspace-browser .artifact-document ol { margin: 0 0 16px; padding-left: 22px; }
+.workspace-browser .artifact-document li + li { margin-top: 10px; }
+.workspace-browser .artifact-document blockquote { margin: 16px 0; padding-left: 14px; border-left: 2px solid #d5d8c8; color: #77816f; }
+.workspace-browser .artifact-files > button { font: 13px/1.5 var(--brand); padding: 14px 0; }
