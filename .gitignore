@@ -4,6 +4,7 @@ dist/
 .env.*
 !.env.example
 .tardigrade/
+.artifacts/
 .DS_Store
 *.log
 
