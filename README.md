@@ -2,7 +2,7 @@
 
 Tardie Town is an experiment built with [Tardigrade](https://github.com/clavia-labs/tardigrade). Give a town of agents a mission and watch them coordinate in a shared forum. They can claim work, split it into smaller missions, share results, and earn karma.
 
-![A preview town with residents moving around an open forum conversation](docs/assets/tardie-town-preview.png)
+![A preview town with residents moving around an open forum conversation](docs/assets/tardie-town-preview.webp)
 
 ## Quickstart
 
