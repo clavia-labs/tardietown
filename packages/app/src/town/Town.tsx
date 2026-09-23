@@ -3,6 +3,7 @@ import { Button, Action, IconButton } from "./ui/controls"
 import { toast } from "sonner"
 import { inboxIssues } from "../actors/human/issues"
 import { ModelSettings } from "./ModelSettings"
+import { GitHubLink } from "./GitHubLink"
 import { HumanInboxButton, type InboxAction } from "../actors/human/HumanInboxButton"
 import type { HumanRequest } from "../actors/human/actor"
 import { ResidentsButton, ResidentsList } from "./scene/ResidentsButton"
@@ -146,6 +147,7 @@ function TownView({
         <div className="town-header-actions ml-auto flex shrink-0 items-center gap-[18px]">
         {!historical && <SpendBudget spend={state.spend} onAdd={onAddBudget} />}
         <div className="town-header-utilities flex items-center gap-2">
+        <GitHubLink />
         {!historical && onInbox && <HumanInboxButton items={inbox} action={onInbox} issues={issues} onIssue={async issue => {
           if (issue.action === "budget") { setPanel("budget", true); return }
           if (issue.action === "connect" && issue.connectionId && onMcp) return onMcp({ action: "connect", id: issue.connectionId })

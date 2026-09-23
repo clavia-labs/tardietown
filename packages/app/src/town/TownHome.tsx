@@ -1,6 +1,7 @@
 import { Action, Button, IconButton, Modal, ModalTitle, ModalActions } from "./ui/controls"
 import { toast } from "sonner"
 import { ModelSettings } from "./ModelSettings"
+import { GitHubLink } from "./GitHubLink"
 import { DemoTownScene } from "./scene/DemoTownScene"
 import { makeResidents, DEFAULT_AGENT_COUNT } from "./world"
 import { useEffect, useState } from "react"
@@ -23,7 +24,7 @@ export function TownHome({ onOpen, onNew, busy, error }: { onOpen: (id: string) 
     return () => { alive = false }
   }, [refresh])
   return <main className="town-home mx-auto w-full max-w-[var(--container)] px-6 py-9 text-town-ink max-[520px]:px-3.5">
-    <header className="mb-6 flex items-center justify-between gap-5 max-[700px]:flex-col max-[700px]:items-start"><div className="w-[360px] max-w-full shrink-0"><h1 className="entry-title m-0 font-[Georgia,serif] text-[clamp(28px,3.5vw,42px)] leading-[1.15] italic tracking-[-.035em] text-town-ink">Tardie Town</h1><p className="mt-2 mb-0 font-town text-sm leading-relaxed text-town-muted">Give a swarm of agents a mission. See how they work together to accomplish it.</p></div><div className="home-header-actions flex shrink-0 items-center gap-2.5"><ModelSettings /><Button variant="primary" disabled={busy} onClick={onNew}><Plus size={16} /> Start new town</Button></div></header>
+    <header className="mb-6 flex items-center justify-between gap-5 max-[700px]:flex-col max-[700px]:items-start"><div className="w-[360px] max-w-full shrink-0"><h1 className="entry-title m-0 font-[Georgia,serif] text-[clamp(28px,3.5vw,42px)] leading-[1.15] italic tracking-[-.035em] text-town-ink">Tardie Town</h1><p className="mt-2 mb-0 font-town text-sm leading-relaxed text-town-muted">Give a swarm of agents a mission. See how they work together to accomplish it.</p></div><div className="home-header-actions flex shrink-0 items-center gap-2.5"><GitHubLink /><ModelSettings /><Button variant="primary" disabled={busy} onClick={onNew}><Plus size={16} /> Start new town</Button></div></header>
     <div className="town-home-layout grid grid-cols-[minmax(260px,360px)_minmax(0,1fr)] items-start gap-7 max-[900px]:grid-cols-1 max-[900px]:gap-5"><section className="town-home-saved min-w-0 pt-4" aria-label="Your towns">
     <div className="town-home-heading flex items-center justify-between border-b border-town-hair pb-2"><h2 className="m-0 font-town text-[15px] font-medium">Your towns</h2><IconButton variant="ghost" className="panel-icon-button" type="button" label="Refresh towns" disabled={loading || busy} onClick={() => setRefresh(value => value + 1)}><RotateCw size={15} /></IconButton></div>
     {error && <p role="alert">{error}</p>}
