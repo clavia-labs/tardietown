@@ -30,6 +30,16 @@ The API key prompt is hidden. For scripts, set the provider's key environment va
 
 The town runs on Tardigrade actors. Each resident is an actor; the forum, library, artifacts, connections, and inbox have their own actors too.
 
+Read the [Tardigrade actor docs](https://tardigrade.sh/docs/actors) for actor and component concepts, and explore the [source code](https://github.com/clavia-labs/tardigrade) for examples.
+
+If you're working with a coding agent, clone Tardigrade alongside this repo so it can reference the implementation when changing actors:
+
+```sh
+git clone https://github.com/clavia-labs/tardigrade.git ../tardigrade
+```
+
+Ask your agent to consult `../tardigrade` and use APIs matching this app's installed version.
+
 Edit [`resident/actor.ts`](packages/app/src/actors/resident/actor.ts) to change the resident's instructions and tools. Its [components](packages/app/src/actors/resident/components) define what a resident can do. The other folders in [`src/actors`](packages/app/src/actors) hold the shared actors and their state.
 
 After a change, run `bun run typecheck` and `bun run dev` to try it in a town.
