@@ -1,4 +1,4 @@
-export const DEFAULT_AGENT_COUNT = 6
+export const DEFAULT_AGENT_COUNT = 10
 export const DEFAULT_MAX_AGENTS = 1000
 export const DEFAULT_MESSAGES_PER_AGENT = 3
 export const DEFAULT_POST_WORDS = 45

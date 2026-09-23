@@ -1,4 +1,4 @@
-import type { ResidentEvent } from "../src/town/actors/resident/events"
+import type { ResidentEvent } from "../src/actors/resident/events"
 // Never expose transport envelopes or credentials through the inspector.
 export function residentEvent(row: { seq: number; event: { type: string; [key: string]: unknown } }, secret?: string): ResidentEvent {
   const details = JSON.stringify(row.event, (key, value) => {

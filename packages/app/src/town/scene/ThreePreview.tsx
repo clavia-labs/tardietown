@@ -1,3 +1,4 @@
+import { Action } from "../ui/controls"
 import { useEffect, useRef, useState } from "react"
 import * as THREE from "three"
 import { OrbitControls } from "three/addons/controls/OrbitControls.js"
@@ -268,9 +269,9 @@ export function ThreePreview({
     >
       {loading && !error && <div className="town-loading" role="status"><span className="town-spinner" />Building your town…</div>}
       {zoomable && !loading && !error && <div className="town-zoom" role="group" aria-label="Town zoom">
-        <button type="button" aria-label="Zoom out" onClick={() => zoom.current(1 / zoomPolicy.step)}>−</button>
-        <button type="button" aria-label="Fit town" onClick={() => zoom.current(null)}>Fit</button>
-        <button type="button" aria-label="Zoom in" onClick={() => zoom.current(zoomPolicy.step)}>+</button>
+        <Action type="button" aria-label="Zoom out" onClick={() => zoom.current(1 / zoomPolicy.step)}>−</Action>
+        <Action type="button" aria-label="Fit town" onClick={() => zoom.current(null)}>Fit</Action>
+        <Action type="button" aria-label="Zoom in" onClick={() => zoom.current(zoomPolicy.step)}>+</Action>
       </div>}
       {error && (
         <p className="three-preview-error">

@@ -15,6 +15,12 @@ export class TownBudget {
   private readonly reservations = new Map<string, number>()
   private readonly costs = new Map<string, { usd: number; estimated: boolean; unavailable: boolean }>()
   private readonly grants = new Map<string, number>()
+  restoreHistory(limit: number, grants: ReadonlyMap<string, number>) {
+    if (!validBudget(limit)) throw Error("Invalid saved budget.")
+    this.limit = limit
+    this.grants.clear(); for (const [id, amount] of grants) this.grants.set(id, amount)
+    this.reservations.clear()
+  }
   constructor(limit: number, private readonly changed: () => void = () => {}) {
     if (!validBudget(limit)) throw new Error("Budget must be $0.01–$100 in whole cents.")
     this.limit = limit

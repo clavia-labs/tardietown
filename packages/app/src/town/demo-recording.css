@@ -1,0 +1,22 @@
+@layer screens {
+  .demo-recording { position: relative; width: 100vw; height: 100dvh; min-height: 0; overflow: hidden; background: var(--bg); }
+  .demo-recording .town-scene { width: 100%; height: 100%; aspect-ratio: auto; }
+  .demo-recording .entry-town-places, .demo-recording .town-zoom { display: none; }
+  .demo-recording-title { position: absolute; z-index: 4; top: 34px; left: 42px; pointer-events: none; }
+  .demo-recording-title h1 { margin: 0; font: italic 42px/1.1 Georgia, serif; color: var(--ink); }
+  .demo-recording-title p { margin: 10px 0 0; max-width: 390px; font: 15px/1.45 var(--brand); color: var(--ink-2); }
+  .demo-recording-title small { display: block; margin-top: 12px; color: var(--ink-2); font: 11px/1.4 var(--mono); }
+  .demo-recording-control { position: absolute; z-index: 8; bottom: 18px; left: 18px; display: flex; align-items: center; gap: 12px; color: var(--ink-2); font: 13px/1.3 var(--brand); }
+  .demo-recording-control button { padding: 8px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--bg); color: var(--ink); cursor: pointer; }
+}
+@layer controls {
+  .demo-recording [data-scene-card="forum"] { --card-width: 430px; --card-height: min(550px, calc(100dvh - 48px)); left: auto !important; right: 28px !important; top: 24px !important; bottom: auto !important; padding: 18px; }
+  .demo-recording [data-scene-card="forum"] .entry-mini-posts { margin-right: -18px; padding-right: 18px; }
+  .demo-recording .entry-mini-board header { font-size: 14px !important; }
+  .demo-recording .entry-forum-nav, .demo-recording .entry-mini-board strong, .demo-recording .entry-mini-board .forum-message-time, .demo-recording .entry-forum-thread small { font-size: 12px !important; }
+  .demo-recording .entry-mini-posts h3 { font-size: 17px !important; }
+  .demo-recording .entry-forum-reply p { font-size: 14px; line-height: 1.45; }
+  .demo-recording .entry-forum-thread p { font-size: 13px !important; }
+  .demo-recording .demo-forum-activity { display: flex; align-items: center; gap: 7px; margin: 14px 0 0 12px; color: var(--ink-2); font: 11px/1.4 var(--mono); }
+  .demo-recording .demo-forum-activity span { width: 6px; height: 6px; border-radius: 50%; background: #839a77; box-shadow: 0 0 0 4px #839a7720; }
+}

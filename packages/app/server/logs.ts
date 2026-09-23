@@ -3,15 +3,15 @@ import { appendFileSync, mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { Effect } from "effect"
 
-// One directory per run; never reopen these databases as a restored town.
+// Each restoration gets fresh runtime databases. Original logs remain immutable.
 export class TownLogs {
   readonly directory: string
-  constructor(root: string, id: string, metadata: unknown) {
+  constructor(root: string, id: string, metadata: unknown, private readonly generation?: string) {
     this.directory = join(root, "towns", id)
     for (const path of [this.directory, join(this.directory, "actors"), join(this.directory, "runtime")]) {
       mkdirSync(path, { recursive: true, mode: 0o700 })
     }
-    writeFileSync(join(this.directory, "town.json"), this.serialize(metadata) + "\n", { mode: 0o600 })
+    if (!generation) writeFileSync(join(this.directory, "town.json"), this.serialize(metadata) + "\n", { mode: 0o600 })
   }
 
   private serialize(value: unknown): string {
@@ -31,10 +31,12 @@ export class TownLogs {
   }
 
   host(actor: string) {
-    const database = join(this.directory, "runtime", `${actor}.sqlite`)
-    const threadDatabase = (thread: string) => join(this.directory, "runtime", `${actor}-${encodeURIComponent(thread)}.sqlite`)
+    const runtime = this.generation ? join(this.directory, "runtime", this.generation) : join(this.directory, "runtime")
+    mkdirSync(runtime, { recursive: true, mode: 0o700 })
+    const database = join(runtime, `${actor}.sqlite`)
+    const threadDatabase = (thread: string) => join(runtime, `${actor}-${encodeURIComponent(thread)}.sqlite`)
     return {
-      storage: join(this.directory, "runtime"),
+      storage: runtime,
       storageLayout: { databaseFor: () => database, instanceFromFile: () => undefined },
       threadDatabase,
       commitObserverFor: ({ thread }: { thread: string }) => {

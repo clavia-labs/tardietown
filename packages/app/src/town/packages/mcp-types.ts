@@ -1,5 +1,5 @@
 export interface McpToolInfo { name: string; method: string; description: string; inputSchema: Record<string, unknown>; enabled: boolean }
-export interface McpConnectionInfo { id: string; name: string; packageName: string; url: string; auth: "none" | "key" | "oauth"; status: "connected" | "auth_required" | "error"; tools: McpToolInfo[]; error?: string }
+export interface McpConnectionInfo { id: string; name: string; packageName: string; url: string; auth: "none" | "key" | "oauth"; status: "connected" | "auth_required" | "error"; tools: McpToolInfo[]; icon?: string; error?: string }
 export type McpCommand =
   | { action: "add"; name: string; url: string; auth: "none" | "key" | "oauth"; apiKey?: string; headerName?: string; clientId?: string }
   | { action: "remove" | "connect"; id: string }

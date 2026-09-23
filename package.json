@@ -6,8 +6,11 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "bun run --cwd packages/app dev",
-    "dev:server": "bun run --cwd packages/app dev:colony-server",
+    "dev": "bun run scripts/dev.ts",
+    "dev:ui": "bun run --cwd packages/app dev",
+    "dev:server": "bun run --cwd packages/app dev:town-server",
+    "model:setup": "bun run scripts/model-setup.ts",
+    "town": "bun run --cwd packages/app cli/main.ts",
     "build": "bun run --cwd packages/app build",
     "typecheck": "bun run --filter \"@tardietown/*\" typecheck",
     "setup": "bun run scripts/setup.ts"

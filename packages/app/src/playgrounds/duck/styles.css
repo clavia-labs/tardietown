@@ -29,7 +29,7 @@
   flex-direction: column;
   gap: 24px;
 }
-.colony-resident.duck-study {
+.town-resident.duck-study {
   position: static;
   transform: none;
   width: min(300px, 60vw);

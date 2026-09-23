@@ -3,7 +3,12 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js"
 import type { McpCommand, McpConnectionInfo, McpToolInfo, McpUpdateResult, InstalledPackage, PackageEvent } from "../../src/town/packages/mcp-types"
 import { uniqueName } from "./names"
-import { McpOAuth } from "./oauth"
+import { serverIcon } from "./icon"
+import { Effect, Redacted, type Context } from "effect"
+import { CredentialStore } from "./credentials"
+import { McpOAuth, type SavedOAuth } from "./oauth"
+export interface SavedConnection { info: McpConnectionInfo; header: string; redirectUrl?: string | undefined; credentialRef: string }
+interface Persistence { townId: string; credentials: Context.Service.Shape<typeof CredentialStore>; record: (connections: SavedConnection[]) => void }
 interface Connection { info: McpConnectionInfo; client?: Client; transport?: StreamableHTTPClientTransport; oauth?: McpOAuth; key?: string; header: string; busy: boolean }
 const validUrl = (value: string) => {
   const url = new URL(value)
@@ -15,7 +20,35 @@ export class McpConnections {
   private readonly usedNames = new Set<string>()
   private readonly installed = new Map<string, InstalledPackage>()
   private publishTail: Promise<void> = Promise.resolve()
-  constructor(private readonly changed: () => void, private readonly publish: (event: PackageEvent) => Promise<void> = async () => {}) {}
+  constructor(private readonly changed: () => void, private readonly publish: (event: PackageEvent) => Promise<void> = async () => {}, private readonly persistence?: Persistence) {}
+  private credentialRef(id: string) { return `${this.persistence?.townId ?? "ephemeral"}/${id}` }
+  private async saveCredentials(value: Connection) {
+    if (!this.persistence) return
+    await Effect.runPromise(this.persistence.credentials.set(this.credentialRef(value.info.id), Redacted.make(JSON.stringify({ key: value.key, oauth: value.oauth?.exportCredentials() }))))
+  }
+  savedConfiguration = (): SavedConnection[] => [...this.connections.values()].map(value => ({ info: structuredClone(value.info), header: value.header, redirectUrl: value.oauth?.redirectUrl, credentialRef: this.credentialRef(value.info.id) }))
+  private saveMetadata() { this.persistence?.record(this.savedConfiguration()) }
+  async restore(saved: readonly SavedConnection[]) {
+    for (const entry of saved) {
+      if (!/^[a-zA-Z0-9-]+$/.test(entry.info.id)) continue
+      const value: Connection = { info: { ...entry.info, status: "error" }, header: entry.header, busy: false }
+      this.connections.set(value.info.id, value); this.usedNames.add(value.info.packageName)
+      try {
+        const secret = this.persistence ? await Effect.runPromise(this.persistence.credentials.get(this.credentialRef(value.info.id))) : undefined
+        const raw = secret ? Redacted.value(secret) : undefined
+        const credentials = raw ? JSON.parse(raw) as { key?: string; oauth?: SavedOAuth } : undefined
+        if (credentials?.key) value.key = credentials.key
+        if (value.info.auth === "oauth" && entry.redirectUrl) {
+          value.oauth = new McpOAuth(entry.redirectUrl, undefined, () => this.saveCredentials(value))
+          if (credentials?.oauth) value.oauth.restoreCredentials(credentials.oauth)
+        }
+        if (value.info.auth !== "none" && !raw) {
+          value.info.status = "auth_required"; value.info.error = "Reconnect to restore credentials."
+        } else await this.connect(value)
+      } catch { value.info.status = "error"; value.info.error = "Could not restore connection. Reconnect to try again." }
+    }
+    this.saveMetadata(); this.changed()
+  }
   private sync(value: Connection) {
     const task = async () => {
       const previous = this.installed.get(value.info.id)
@@ -50,13 +83,16 @@ export class McpConnections {
     try {
       // SDK v1 exposes an optional sessionId getter as string | undefined.
       await client.connect(transport as Transport)
+      const icon = serverIcon(client.getServerVersion()?.icons)
+      if (icon) value.info.icon = icon
+      else delete value.info.icon
       const tools: McpToolInfo[] = []
-      const enabled = new Set(value.info.tools.filter(tool => tool.enabled).map(tool => tool.name))
+      const selections = new Map(value.info.tools.map(tool => [tool.name, tool.enabled]))
       let cursor: string | undefined
       const seen = new Set<string>()
       do {
         const page = await client.listTools(cursor ? { cursor } : {})
-        tools.push(...page.tools.map(tool => ({ name: tool.name, method: "", description: (tool.description ?? "").slice(0, 2000), inputSchema: tool.inputSchema as Record<string, unknown>, enabled: enabled.has(tool.name) })))
+        tools.push(...page.tools.map(tool => ({ name: tool.name, method: "", description: (tool.description ?? "").slice(0, 2000), inputSchema: tool.inputSchema as Record<string, unknown>, enabled: selections.get(tool.name) ?? true })))
         cursor = page.nextCursor
         if (tools.length > 500 || (cursor && seen.has(cursor))) throw Error("Tool list too large")
         if (cursor) seen.add(cursor)
@@ -72,6 +108,7 @@ export class McpConnections {
       await client.close().catch(() => {})
     }
     await this.sync(value)
+    this.saveMetadata()
     this.changed()
   }
   async command(command: McpCommand, callback: string): Promise<McpUpdateResult> {
@@ -83,15 +120,17 @@ export class McpConnections {
       if (command.auth === "key" && (typeof command.apiKey !== "string" || !command.apiKey.trim() || command.apiKey.length > 4096 || /[\r\n]/.test(command.apiKey))) throw Error("Supply a valid API key.")
       if (command.clientId !== undefined && (typeof command.clientId !== "string" || command.clientId.length > 512)) throw Error("Invalid client ID.")
       value = { info: { id: crypto.randomUUID(), name: command.name.trim(), packageName: uniqueName(command.name.trim().toLowerCase(), this.usedNames), url: validUrl(command.url), auth: command.auth, status: "error", tools: [] }, header, busy: false,
-        ...(command.auth === "key" ? { key: command.apiKey!.trim() } : {}), ...(command.auth === "oauth" ? { oauth: new McpOAuth(callback, command.clientId?.trim() || undefined) } : {}) }
+        ...(command.auth === "key" ? { key: command.apiKey!.trim() } : {}), ...(command.auth === "oauth" ? { oauth: new McpOAuth(callback, command.clientId?.trim() || undefined, () => this.saveCredentials(value)) } : {}) }
+      await this.saveCredentials(value)
       this.connections.set(value.info.id, value)
+      this.saveMetadata()
     } else {
       value = this.get(command.id)
       if (value.busy) throw Error("Connection is busy. Try again.")
-      if (command.action === "remove") { this.connections.delete(command.id); await value.client?.close().catch(() => {}); await this.sync(value); this.changed(); return { connections: this.snapshot() } }
+      if (command.action === "remove") { if (this.persistence) await Effect.runPromise(this.persistence.credentials.remove(this.credentialRef(command.id))); this.connections.delete(command.id); await value.client?.close().catch(() => {}); await this.sync(value); this.saveMetadata(); this.changed(); return { connections: this.snapshot() } }
       if (command.action === "tools") {
         if (!Array.isArray(command.enabled) || !command.enabled.every(name => typeof name === "string" && value.info.tools.some(tool => tool.name === name))) throw Error("Unknown MCP tool.")
-        value.info.tools = value.info.tools.map(tool => ({ ...tool, enabled: command.enabled.includes(tool.name) })); await this.sync(value); this.changed(); return { connections: this.snapshot() }
+        value.info.tools = value.info.tools.map(tool => ({ ...tool, enabled: command.enabled.includes(tool.name) })); await this.sync(value); this.saveMetadata(); this.changed(); return { connections: this.snapshot() }
       }
       if (command.action !== "connect") throw Error("Unknown MCP command.")
     }

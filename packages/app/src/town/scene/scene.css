@@ -1,0 +1,30 @@
+@layer screens {
+.town-scene { position: relative; aspect-ratio: 1000/680; isolation: isolate; background: transparent; }
+.three-preview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.three-preview canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.three-preview-error {
+  padding: 24px;
+  font: 12px var(--mono);
+}
+.town-scene > .three-preview {
+  position: absolute;
+  inset: 0;
+}
+
+.town-loading { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; gap: 10px; background: #f8f7f0e8; color: #717b68; font: 13px var(--mono); }
+.town-spinner { width: 18px; height: 18px; border: 2px solid #d5d9cd; border-top-color: #697563; border-radius: 50%; animation: town-spin 0.8s linear infinite; }
+@keyframes town-spin { to { transform: rotate(360deg); } }
+.town-zoom { position: absolute; bottom: 14px; left: 16px; z-index: 6; display: flex; gap: 2px; padding: 2px; border: 1px solid #d5d9cd; border-radius: 6px; background: #f8f7f0f2; }
+.town-zoom button { min-height: 27px; background: none; border: 0; border-radius: 3px; color: #697563; padding: 4px 8px; font: 12px/1.4 var(--mono); cursor: pointer; }
+.town-zoom button:focus-visible { outline: 2px solid #af7942; outline-offset: -2px; }
+@media (prefers-reduced-motion: reduce) { .town-spinner { animation: none; } }
+
+}

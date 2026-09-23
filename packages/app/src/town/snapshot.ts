@@ -1,6 +1,6 @@
-import type { ColonySnapshot } from "./protocol"
+import type { TownSnapshot } from "./protocol"
 
-export function reconcileColonySnapshot(previous: ColonySnapshot | undefined, next: ColonySnapshot): ColonySnapshot {
+export function reconcileTownSnapshot(previous: TownSnapshot | undefined, next: TownSnapshot): TownSnapshot {
   if (!previous || previous.id !== next.id) return next
   return {
     ...next,

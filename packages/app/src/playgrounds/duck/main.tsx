@@ -1,7 +1,8 @@
+import { Button as Action } from "@base-ui/react/button"
 import { useEffect, useState } from "react"
 import { type PreviewView } from "../../town/scene/ThreePreview"
 import { createRoot } from "react-dom/client"
-import { CrewDuck } from "../../town/scene/ColonyPreview"
+import { CrewDuck } from "../../town/scene/CrewDuck"
 import { DUCK_PALETTES as palettes } from "../../town/scene/duckPalettes"
 import {
   DEFAULT_DUCK_MOTION,
@@ -72,7 +73,7 @@ function DuckStudy() {
       </header>
       <aside className="duck-palette" aria-label="Duck color palettes">
         {palettes.map(({ name, colors }, index) => (
-          <button
+          <Action
             key={name}
             type="button"
             className="duck-palette-swatch"
@@ -86,12 +87,12 @@ function DuckStudy() {
                 background: `linear-gradient(135deg, ${colors.shell} 0% 62%, ${colors.jaw} 62% 82%, ${colors.frame} 82% 100%)`
               }}
             />
-          </button>
+          </Action>
         ))}
       </aside>
       <figure className="duck-stage">
         <div
-          className="colony-resident duck-study"
+          className="town-resident duck-study"
           role="img"
           aria-label={`${resident.name}, a robot duck with a circular eye, flush hinged jaw and broad feet, a cuboid neck and torso, cylindrical legs and hinges, and a colored identification panel`}
         >
@@ -107,7 +108,7 @@ function DuckStudy() {
       </figure>
       <div className="duck-view-controls" aria-label="Camera view">
         {(["isometric", "front", "side", "back"] as const).map((angle) => (
-          <button
+          <Action
             key={angle}
             type="button"
             aria-pressed={view === angle}
@@ -117,14 +118,14 @@ function DuckStudy() {
             }}
           >
             {angle}
-          </button>
+          </Action>
         ))}
       </div>
       <p className="duck-page-note">Hover to open the mouth. Drag to rotate.</p>
       <section className="duck-motion" aria-label="Movement controls">
         <div className="duck-motion-header">
           <h2>Movement</h2>
-          <button
+          <Action
             type="button"
             onClick={() => {
               setPlaying(null)
@@ -132,11 +133,11 @@ function DuckStudy() {
             }}
           >
             Reset pose
-          </button>
+          </Action>
         </div>
         <div className="duck-behaviors">
           {behaviors.map(({ key, label }) => (
-            <button
+            <Action
               key={key}
               type="button"
               aria-pressed={playing?.behavior === key}
@@ -146,12 +147,12 @@ function DuckStudy() {
               }}
             >
               {label}
-            </button>
+            </Action>
           ))}
           {playing && (
-            <button type="button" onClick={() => setPlaying(null)}>
+            <Action type="button" onClick={() => setPlaying(null)}>
               Pause
-            </button>
+            </Action>
           )}
         </div>
         <div className="duck-pose-sliders">

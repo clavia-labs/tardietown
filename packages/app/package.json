@@ -7,9 +7,11 @@
     "dev:server": "bun run server/main.ts",
     "build": "vite build",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.server.json",
-    "dev:colony-server": "bun run server/main.ts"
+    "dev:town-server": "bun run server/main.ts"
   },
   "dependencies": {
+    "@base-ui/react": "^1.8.0",
+    "@effect/platform-bun": "4.0.0-rc.115",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@tardietown/characters": "workspace:*",
     "effect": "4.0.0-rc.115",
@@ -18,15 +20,19 @@
     "react-dom": "^19.2.8",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
-    "tardie": "^0.30.0-rc.324",
-    "three": "^0.186.0"
+    "sonner": "^2.0.8",
+    "tardie": "^0.30.0-rc.326",
+    "three": "^0.186.0",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
     "@tardie/ai-bedrock": "0.0.8",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@types/three": "^0.185.4",
     "@vitejs/plugin-react": "^6.1.1",
+    "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.2"
   }

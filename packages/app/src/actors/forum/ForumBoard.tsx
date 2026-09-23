@@ -1,0 +1,346 @@
+import { useTownUi } from "../../town/state/TownUiProvider"
+import { IconButton, Textarea, Action, Input } from "../../town/ui/controls"
+import { MissionFlairs } from "./MissionFlairs"
+import { ArrowLeft as PanelBack } from "lucide-react"
+import { ReviewPanel, type ReviewMission } from "./missions/ReviewPanel"
+import { MessagesSquare, ArrowUp, ArrowDown, MessageCircle, Plus, X, Maximize2, Minimize2 } from "lucide-react"
+import Markdown from "react-markdown"
+import remarkGfm from "remark-gfm"
+import { MessageTime } from "../../ui/MessageTime"
+import { useState, type FormEvent } from "react"
+import { ResidentAvatar } from "../../town/scene/ResidentAvatar"
+import type { Resident } from "../../town/world"
+import type { shuffleDuckPalettes } from "../../town/scene/duckPalettes"
+import type { ForumMessage } from "../resident/components/forum"
+import type { ForumPolicy, ForumResult } from "../resident/components/forum"
+import type { UserForumCommand } from "./user"
+import type { Mission } from "./missions/store"
+
+export function ForumBoard({
+  policy,
+  onSubmit,
+  messages,
+  residents,
+  palettes,
+  missions = [],
+  onArtifact,
+  onReview,
+  onClose
+}: {
+  policy: ForumPolicy
+  onSubmit: (
+    command: UserForumCommand,
+    operationId: string
+  ) => Promise<ForumResult>
+  messages: readonly ForumMessage[]
+  residents: readonly Resident[]
+  palettes: ReturnType<typeof shuffleDuckPalettes>
+  missions?: readonly Mission[]
+  onClose: () => void
+  onReview?: ReviewMission | undefined
+  onArtifact?: (path: string, revision?: number) => void
+}) {
+  const expanded = useTownUi(state => state.forumExpanded)
+  const setExpanded = useTownUi(state => state.setForumExpanded)
+  const [thread, setThread] = useState<string>()
+  const [parent, setParent] = useState<string>()
+  const [creating, setCreating] = useState(false)
+  const [title, setTitle] = useState("")
+  const [body, setBody] = useState("")
+  const [error, setError] = useState<string>()
+  const [sending, setSending] = useState(false)
+  const root = messages.find((message) => message.id === thread)
+  const missionById = new Map(missions.map(mission => [mission.id, mission]))
+  const author = (id: string) =>
+    residents.find((resident) => resident.id === id)?.name ?? "You"
+  const voteScore = (message: ForumMessage) => (
+    <span className="forum-vote-score" data-positive={(message.score ?? 0) > 0} data-negative={(message.score ?? 0) < 0}
+      role="img" aria-label={`Post score: ${message.score ?? 0}`} title="Net votes from residents">
+      <ArrowUp size={14} aria-hidden="true" />
+      <span>{message.score ?? 0}</span>
+      <ArrowDown size={14} aria-hidden="true" />
+    </span>
+  )
+  const authorLine = (message: ForumMessage) => (
+    <div className="board-author">
+      {message.author === "user" ? (
+        <ResidentAvatar index="user" />
+      ) : (
+        <ResidentAvatar index={Math.max(0, residents.findIndex((resident) => resident.id === message.author))} />
+      )}
+      <strong>{author(message.author)}</strong>
+      <MessageTime at={message.at} />
+    </div>
+  )
+  const openThread = (id: string) => {
+    setThread(id)
+    setParent(id)
+    setBody("")
+  }
+  const threadTitle = (message: ForumMessage) => missionById.get(message.id)?.description ?? message.title
+  const threadBody = (message: ForumMessage) => message.body.trim() === threadTitle(message)?.trim() ? "" : message.body
+  const missionFlair = (mission?: Mission) => mission && <MissionFlairs status={mission.status} child={!!mission.parentMissionId} />
+  const submissionLink = (mission?: Mission) => mission?.artifactPath && onArtifact && (
+    <Action type="button" className="forum-submission-link" title={mission.artifactPath} onClick={() => onArtifact(mission.artifactPath!, mission.artifactRevision)}>
+      {mission.artifactPath.split("/").at(-1)} · v{mission.artifactRevision}
+    </Action>
+  )
+  const missionDetails = (mission: Mission, detail = false) => {
+    const parentMission = mission.parentMissionId ? missionById.get(mission.parentMissionId) : undefined
+    const children = missions.filter(entry => entry.parentMissionId === mission.id)
+    return <div className="forum-mission-details">
+      <div className="forum-mission-line">
+        <span>{mission.owner ? `Owned by ${author(mission.owner)}` : "Unclaimed"}</span>
+        {detail && mission.claimExpiresAt && <span>Claim expires <time dateTime={new Date(mission.claimExpiresAt).toISOString()}>{new Date(mission.claimExpiresAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}</time></span>}
+      </div>
+      {detail && parentMission && <Action type="button" onClick={() => openThread(parentMission.id)}>Parent mission: {parentMission.description}</Action>}
+      {detail && children.length > 0 && <div className="forum-mission-children"><small>Child missions</small>{children.map(child => <Action type="button" key={child.id} onClick={() => openThread(child.id)}>{child.description}</Action>)}</div>}
+      {detail && mission.requests.length > 0 && <div className="forum-handoff-requests"><small>Handoff requests</small>{mission.requests.map((request, index) => <p key={`${request.residentId}-${request.at}-${index}`}><strong>{author(request.residentId)}</strong> · {request.reason}</p>)}</div>}
+      {detail && !mission.reviewId && submissionLink(mission)}
+      {detail && <ReviewPanel key={`${mission.id}-${mission.reviewId}`} mission={mission} residents={residents} onReview={onReview} artifact={submissionLink(mission)} />}
+    </div>
+  }
+  const submit = async (event: FormEvent) => {
+    event.preventDefault()
+    if (sending || !body.trim()) return
+    setSending(true)
+    setError(undefined)
+    try {
+      const target = messages.find(
+        (message) => message.id === (parent ?? thread)
+      )
+      const result = await onSubmit(
+        creating || !target
+          ? { kind: "create_post", title: title.trim(), body: body.trim() }
+          : { kind: "reply", parentId: target.id, body: body.trim() },
+        crypto.randomUUID()
+      )
+      if (!result.ok) {
+        setError(result.message)
+        return
+      }
+      if (result.kind === "create_post" || result.kind === "reply") {
+        setThread(result.message.threadId)
+        setParent(result.message.threadId)
+      }
+      setCreating(false)
+      setTitle("")
+      setBody("")
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause))
+    } finally {
+      setSending(false)
+    }
+  }
+  const renderMessage = (
+    message: ForumMessage,
+    depth: number
+  ): React.ReactNode => (
+    <div
+      key={message.id}
+      className="forum-branch"
+      data-has-replies={messages.some((reply) => reply.parentId === message.id)}
+      data-deep={depth >= 3}
+    >
+      <article>
+        {authorLine(message)}
+        {threadBody(message) && <div className="forum-message-body">
+          {depth > 3 && (
+            <small>
+              Reply to{" "}
+              {author(
+                messages.find((entry) => entry.id === message.parentId)
+                  ?.author ?? "user"
+              )}
+            </small>
+          )}
+          <div className="forum-markdown">
+            <Markdown remarkPlugins={[remarkGfm]} skipHtml components={{
+              img: ({ alt }) => <span>{alt}</span>,
+              a: ({ href, children }) => {
+                if (!href || !/^https?:\/\//i.test(href)) return <span>{children}</span>
+                const bare = String(children) === href || `https://${String(children)}` === href
+                let label = children
+                if (bare) {
+                  try { label = new URL(href).hostname.replace(/^www\./, "") } catch { /* Keep the original label. */ }
+                }
+                return <a href={href} target="_blank" rel="noopener noreferrer" title={href} aria-label={bare ? href : undefined}>{label}{bare && <span className="forum-link-arrow" aria-hidden="true"> ↗</span>}</a>
+              }
+            }}>{threadBody(message)}</Markdown>
+          </div>
+        </div>}
+        <div className="forum-post-actions">
+        {voteScore(message)}
+        <Action
+          type="button"
+          className="forum-reply"
+          aria-label={`Reply to ${author(message.author)}: ${message.body.slice(0, 40)}`}
+          onClick={() => {
+            setParent(message.id)
+            setCreating(false)
+          }}
+        >
+          <MessageCircle size={13} aria-hidden="true" /> Reply
+        </Action>
+        </div>
+      </article>
+      {messages.some((reply) => reply.parentId === message.id) && (
+        <div className="forum-children">
+          {messages
+            .filter((reply) => reply.parentId === message.id)
+            .map((reply) => renderMessage(reply, depth + 1))}
+        </div>
+      )}
+    </div>
+  )
+  const threads = messages
+    .filter((message) => !message.parentId)
+    .sort((a, b) => {
+      const latest = (id: string) =>
+        messages.findLast((message) => message.threadId === id)?.sequence ?? 0
+      return latest(b.id) - latest(a.id)
+    })
+  const visibleThreads = threads
+  return (
+    <aside data-scene-card="forum" className="browser-board" data-expanded={expanded} aria-label="Forum">
+      <div className="browser-board-heading">
+        {(thread || creating) && (
+          <IconButton variant="ghost"
+            className="forum-back"
+            type="button"
+            label="Back to threads"
+            onClick={() => {
+              setThread(undefined)
+              setParent(undefined)
+              setCreating(false)
+              setError(undefined)
+            }}
+          >
+            <PanelBack size={18} strokeWidth={1.75} aria-hidden="true" />
+          </IconButton>
+        )}
+        <h2><MessagesSquare size={16} aria-hidden="true" /> Forum</h2>
+        <IconButton variant="ghost"
+          type="button"
+          className="forum-new-post"
+          label="New post"
+          title="New post"
+          onClick={() => {
+            setCreating(true)
+            setThread(undefined)
+            setParent(undefined)
+            setBody("")
+          }}
+        >
+          <Plus size={18} strokeWidth={1.75} aria-hidden="true" />
+        </IconButton>
+        <IconButton variant="ghost" className="forum-expand" type="button" label={expanded ? "Collapse forum" : "Expand forum"} title={expanded ? "Collapse forum" : "Expand forum"} aria-pressed={expanded} onClick={() => setExpanded(value => !value)}>
+          {expanded ? <Minimize2 size={16} strokeWidth={1.75} aria-hidden="true" /> : <Maximize2 size={16} strokeWidth={1.75} aria-hidden="true" />}
+        </IconButton>
+        <IconButton variant="ghost" className="forum-close" type="button" onClick={onClose} label="Close forum"><X size={18} strokeWidth={1.75} aria-hidden="true" /></IconButton>
+      </div>
+      <div className="forum-navigation">
+        {!thread && !creating ? (
+          <span>{visibleThreads.length} {visibleThreads.length === 1 ? "thread" : "threads"}</span>
+        ) : (
+          <span />
+        )}
+      </div>
+      <div className="browser-posts">
+        {creating ? (
+          <p className="forum-hint">Start a new conversation with the residents.</p>
+        ) : root ? (
+          <>
+            {missionFlair(missionById.get(root.id))}
+            <h3 className="forum-thread-title">{threadTitle(root)}</h3>
+            {missionById.get(root.id) && missionDetails(missionById.get(root.id)!, true)}
+            {renderMessage(root, 0)}
+          </>
+        ) : visibleThreads.length ? (
+          visibleThreads.map((message) => (
+            <div className="forum-thread-entry" key={message.id}>
+            <Action
+              type="button"
+              className="forum-thread-card"
+              key={message.id}
+              onClick={() => openThread(message.id)}
+            >
+              {authorLine(message)}
+              {missionFlair(missionById.get(message.id))}
+              <h3 className="forum-thread-title">{threadTitle(message)}</h3>
+              {missionById.get(message.id) && missionDetails(missionById.get(message.id)!)}
+              {threadBody(message) && <p>{threadBody(message)}</p>}
+              <span className="forum-post-actions">
+                {voteScore(message)}
+                <span className="forum-reply-count"><MessageCircle size={13} aria-hidden="true" />
+                {
+                  messages.filter(
+                    (entry) => entry.threadId === message.id && entry.parentId
+                  ).length
+                }{" "}
+                replies
+                </span>
+              </span>
+            </Action>
+            {submissionLink(missionById.get(message.id))}
+            </div>
+          ))
+        ) : (
+          <p className="forum-hint">
+            The residents are reading their mission. Start a thread, or wait for
+            their first idea.
+          </p>
+        )}
+      </div>
+      {(creating || root) && (
+        <form
+          onSubmit={(event) => {
+            void submit(event)
+          }}
+        >
+          {creating ? (
+            <Input
+              aria-label="Post title"
+              placeholder="Give your post a title"
+              value={title}
+              maxLength={policy.maxTitleCharacters}
+              onChange={(event) => setTitle(event.target.value)}
+              required
+            />
+          ) : (
+            <small>
+              Replying to{" "}
+              {author(
+                messages.find((message) => message.id === (parent ?? thread))
+                  ?.author ?? "user"
+              )}
+            </small>
+          )}
+          <Textarea
+            aria-label={creating ? "Post body" : "Reply body"}
+            placeholder={
+              creating
+                ? "Share an idea with the residents"
+                : "Add to the conversation"
+            }
+            value={body}
+            maxLength={policy.maxBodyCharacters}
+            onChange={(event) => setBody(event.target.value)}
+            required
+          />
+          {error && (
+            <p role="alert" className="browser-error">
+              {error}
+            </p>
+          )}
+          <Action
+            type="submit"
+            disabled={sending || !body.trim() || (creating && !title.trim())}
+          >
+            {sending ? "Sending…" : creating ? "Post" : "Reply"}
+          </Action>
+        </form>
+      )}
+    </aside>
+  )
+}

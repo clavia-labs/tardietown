@@ -1,3 +1,4 @@
+import { Button as Action } from "@base-ui/react/button"
 import { useCallback, useMemo, useRef, useState } from "react"
 import { createRoot } from "react-dom/client"
 import * as THREE from "three"
@@ -289,7 +290,7 @@ function GridStudy() {
       <div className="grid-toolbar">
         <div className="grid-crew" aria-label="Choose a duck">
           {residents.map((resident) => (
-            <button
+            <Action
               key={resident.id}
               type="button"
               aria-pressed={selected === resident.id}
@@ -301,17 +302,17 @@ function GridStudy() {
             >
               <i style={{ background: resident.color }} />
               {resident.name}
-            </button>
+            </Action>
           ))}
         </div>
-        <button
+        <Action
           type="button"
           aria-pressed={edit}
           onClick={() => setEdit((value) => !value)}
         >
           Place obstacles
-        </button>
-        <button
+        </Action>
+        <Action
           type="button"
           onClick={() => {
             controller.stop(selected)
@@ -320,8 +321,8 @@ function GridStudy() {
           }}
         >
           Stop
-        </button>
-        <button
+        </Action>
+        <Action
           type="button"
           onClick={() => {
             setRevision((value) => value + 1)
@@ -329,7 +330,7 @@ function GridStudy() {
           }}
         >
           Reset
-        </button>
+        </Action>
       </div>
       <div className="grid-stage">
         <ThreePreview
